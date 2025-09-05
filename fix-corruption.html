@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Fix Data Corruption</title>
+  <style>
+    body { 
+      font-family: system-ui, -apple-system, sans-serif; 
+      max-width: 800px; 
+      margin: 50px auto; 
+      padding: 20px;
+      background: #0c1117;
+      color: #eaf1ff;
+    }
+    button { 
+      padding: 12px 24px; 
+      margin: 10px; 
+      font-size: 16px; 
+      cursor: pointer;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 8px;
+    }
+    button:hover { opacity: 0.9; }
+    pre { 
+      background: #1a1f2a; 
+      padding: 15px; 
+      border-radius: 8px; 
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .success { color: #22c55e; }
+    .warning { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <h1>Fix Pass List Data Corruption</h1>
+  <p>This page will help fix the corrupted data where hours are appearing in the wrong columns.</p>
+  
+  <button onclick="analyzeData()">1. Analyze Current Data</button>
+  <button onclick="cleanData()">2. Clean Corrupted Data</button>
+  <button onclick="clearEverything()">3. Nuclear Option - Clear Everything</button>
+  <button onclick="window.location.href='index.html'">4. Return to Pass List</button>
+  
+  <h2>Output:</h2>
+  <pre id="output">Click a button to start...</pre>
+  
+  <script>
+    function analyzeData() {
+      const output = document.getElementById('output');
+      let report = 'ANALYZING CURRENT DATA:\n\n';
+      
+      // Check entries
+      const entries = JSON.parse(localStorage.getItem('pass-list-entries-v1') || '[]');
+      report += `Found ${entries.length} entries\n\n`;
+      
+      // Look for corrupted entries
+      const corrupted = [];
+      entries.forEach((entry, i) => {
+        const issues = [];
+        
+        // Check if name contains only numbers
+        if (/^\d+$/.test(entry.name?.trim() || '')) {
+          issues.push('Name is just a number');
+        }
+        
+        // Check if name contains date fragments
+        const nameLower = (entry.name || '').toLowerCase();
+        if (nameLower.includes('fri') || nameLower.includes('sat') || 
+            nameLower.includes('sun') || nameLower.includes('mon') ||
+            nameLower.includes('sep')) {
+          issues.push('Name contains date fragments');
+        }
+        
+        // Check if lisNumber contains date text
+        const lisLower = (entry.lisNumber || '').toLowerCase();
+        if (lisLower.includes('fri') || lisLower.includes('sat') || 
+            lisLower.includes('sun') || lisLower.includes('mon') ||
+            lisLower.includes('sep')) {
+          issues.push('List # contains date text');
+        }
+        
+        // Check for missing required fields
+        if (!entry.name || !entry.passNumber) {
+          issues.push('Missing required fields');
+        }
+        
+        // Check for invalid ID
+        if (!entry.id) {
+          issues.push('Missing ID');
+        }
+        
+        if (issues.length > 0) {
+          corrupted.push({
+            index: i,
+            entry: entry,
+            issues: issues
+          });
+        }
+      });
+      
+      if (corrupted.length > 0) {
+        report += 'CORRUPTED ENTRIES FOUND:\n';
+        corrupted.forEach(c => {
+          report += `\nEntry #${c.index}:\n`;
+          report += `  Name: "${c.entry.name}"\n`;
+          report += `  List #: "${c.entry.lisNumber}"\n`;
+          report += `  Pass #: "${c.entry.passNumber}"\n`;
+          report += `  Issues: ${c.issues.join(', ')}\n`;
+        });
+        report += '\n<span class="warning">⚠️ Found ' + corrupted.length + ' corrupted entries!</span>\n';
+      } else {
+        report += '<span class="success">✓ No obviously corrupted entries found</span>\n';
+      }
+      
+      // Check for hours data
+      const hours = localStorage.getItem('pass-list-hours-v1');
+      if (hours) {
+        const hoursData = JSON.parse(hours);
+        const personIds = Object.keys(hoursData);
+        report += `\nFound hours data for ${personIds.length} people\n`;
+      }
+      
+      output.innerHTML = report;
+    }
+    
+    function cleanData() {
+      const output = document.getElementById('output');
+      let report = 'CLEANING DATA:\n\n';
+      
+      try {
+        // Get current entries
+        const entries = JSON.parse(localStorage.getItem('pass-list-entries-v1') || '[]');
+        const originalCount = entries.length;
+        
+        // Filter out corrupted entries
+        const cleaned = entries.filter(entry => {
+          // Must have valid name and pass number
+          if (!entry.name || !entry.passNumber) return false;
+          
+          const name = entry.name.trim();
+          const passNumber = entry.passNumber.trim();
+          
+          // Name cannot be just numbers
+          if (/^\d+$/.test(name)) return false;
+          
+          // Name cannot contain date fragments
+          const nameLower = name.toLowerCase();
+          if (nameLower.includes('fri') || nameLower.includes('sat') || 
+              nameLower.includes('sun') || nameLower.includes('mon') ||
+              nameLower.includes('sep') || nameLower.includes('oct') ||
+              nameLower.includes('nov') || nameLower.includes('dec')) {
+            return false;
+          }
+          
+          // List number cannot contain date text
+          if (entry.lisNumber) {
+            const lisLower = entry.lisNumber.toLowerCase();
+            if (lisLower.includes('fri') || lisLower.includes('sat') || 
+                lisLower.includes('sun') || lisLower.includes('mon') ||
+                lisLower.includes('sep')) {
+              return false;
+            }
+          }
+          
+          // Must have an ID
+          if (!entry.id) return false;
+          
+          return true;
+        });
+        
+        // Save cleaned data
+        localStorage.setItem('pass-list-entries-v1', JSON.stringify(cleaned));
+        
+        report += `Original entries: ${originalCount}\n`;
+        report += `Cleaned entries: ${cleaned.length}\n`;
+        report += `Removed: ${originalCount - cleaned.length} corrupted entries\n\n`;
+        
+        if (originalCount - cleaned.length > 0) {
+          report += '<span class="success">✓ Successfully cleaned data!</span>\n';
+        } else {
+          report += '<span class="success">✓ No corrupted entries to remove</span>\n';
+        }
+        
+      } catch (e) {
+        report += '<span class="warning">Error: ' + e.message + '</span>\n';
+      }
+      
+      output.innerHTML = report;
+    }
+    
+    function clearEverything() {
+      if (!confirm('This will DELETE ALL DATA. Are you absolutely sure?')) return;
+      
+      const output = document.getElementById('output');
+      let report = 'CLEARING ALL DATA:\n\n';
+      
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('pass-list-') || key.startsWith('ot_'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      report += 'Removing keys:\n';
+      keysToRemove.forEach(k => {
+        report += '  - ' + k + '\n';
+        localStorage.removeItem(k);
+      });
+      
+      report += '\n<span class="success">✓ All data cleared successfully!</span>\n';
+      report += '\nYou can now return to the Pass List for a fresh start.';
+      
+      output.innerHTML = report;
+    }
+  </script>
+</body>
+</html>

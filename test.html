@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Test - Clear LocalStorage</title>
+</head>
+<body>
+  <h1>LocalStorage Cleaner</h1>
+  <button onclick="clearAll()">Clear All Pass List Data</button>
+  <button onclick="window.location.href='index.html'">Go to Pass List</button>
+  <pre id="output"></pre>
+  
+  <script>
+    function clearAll() {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('pass-list-') || key.startsWith('ot_'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      document.getElementById('output').textContent = 
+        'Removing keys:\n' + keysToRemove.join('\n');
+      
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+      
+      setTimeout(() => {
+        document.getElementById('output').textContent += 
+          '\n\nDone! All pass list data cleared.';
+      }, 100);
+    }
+  </script>
+</body>
+</html>

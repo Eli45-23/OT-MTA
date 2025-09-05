@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Claude Code configuration
+.claude/
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# Logs
+*.log
