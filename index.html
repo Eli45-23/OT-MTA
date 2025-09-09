@@ -2,10 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Pass List — Names & Numbers</title>
   <style>
-    :root { --bg:#0c1117; --panel:#0f1621; --muted:#7b869a; --text:#eaf1ff; --border:rgba(255,255,255,0.08); --accent:#60a5fa; --success:#22c55e; --danger:#ef4444; --shadow:0 10px 30px rgba(0,0,0,0.35); --ok:#22c55e; --r:14px; --pad:16px; --gap:16px; --gap-lg:24px; --w-list:70px; --w-name:180px; --w-pass:120px; --table-bg:#0f1621; --thead-bg:rgba(15,22,33,.96); --border-col:rgba(255,255,255,.08); }
+    :root { 
+      --bg:#0c1117; --panel:#0f1621; --muted:#7b869a; --text:#eaf1ff; --border:rgba(255,255,255,0.08); --accent:#60a5fa; --success:#22c55e; --danger:#ef4444; --shadow:0 10px 30px rgba(0,0,0,0.35); --ok:#22c55e; --r:14px; --pad:16px; --gap:16px; --gap-lg:24px; --w-list:70px; --w-name:180px; --w-pass:120px; --table-bg:#0f1621; --thead-bg:rgba(15,22,33,.96); --border-col:rgba(255,255,255,.08);
+      
+      /* Mobile-specific variables */
+      --mobile-touch-target: 44px;
+      --mobile-spacing: 12px;
+      --mobile-border-radius: 8px;
+      --safe-area-top: env(safe-area-inset-top);
+      --safe-area-bottom: env(safe-area-inset-bottom);
+      --safe-area-left: env(safe-area-inset-left);
+      --safe-area-right: env(safe-area-inset-right);
+    }
     * { box-sizing: border-box; }
     body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color:var(--text); }
     .wrap { max-width: 1200px; margin: 0 auto; padding: var(--gap-lg); }
@@ -58,9 +69,6 @@
     /* Hide number input spinners (Firefox) */
     input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     .row { display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
-    /* Two-column layout: main grid + Who's Next panel */
-    .split { display:grid; grid-template-columns: 1fr 340px; gap:24px; align-items:start; }
-    @media (max-width: 1024px){ .split { grid-template-columns: 1fr; } }
 
     button { cursor:pointer; border:none; border-radius: 12px; padding:8px 14px; font-weight:600; color:var(--text); background: rgba(255,255,255,0.06); border:1px solid var(--border); transition: transform .08s ease, box-shadow .15s ease; }
     button:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.25); transform: translateY(-1px); }
@@ -217,33 +225,178 @@
     #wnList .wn-buttons { display:flex; gap:4px; margin-top:4px; }
     #wnList .wn-btn { padding:4px 8px; font-size:11px; font-weight:500; border-radius:8px; cursor:pointer; border:none; transition:all .15s ease; }
     #wnList .wn-btn:hover { transform:translateY(-1px); box-shadow:0 2px 8px rgba(0,0,0,0.2); }
-    #wnList .wn-btn.done { background:var(--success); color:white; }
     #wnList .wn-btn.not-here { background:var(--muted); color:white; }
-    #wnList .wn-btn.done:hover { background:#16a34a; }
     #wnList .wn-btn.not-here:hover { background:#6b7280; }
     
-    /* New button states for refuse/unrefuse */
-    #wnList .wn-btn.refuse-shift { background:var(--danger); color:white; }
-    #wnList .wn-btn.refuse-shift:hover { background:#dc2626; }
-    #wnList .wn-btn.unrefuse-shift { background:var(--muted); color:white; }
-    #wnList .wn-btn.unrefuse-shift:hover { background:#4b5563; }
-    
-    /* Reset button styling - warning/orange color to indicate caution */
-    #wnList .wn-btn.reset-shift { background:#f59e0b; color:#0b1119; font-weight:600; }
-    #wnList .wn-btn.reset-shift:hover { background:#d97706; box-shadow:0 4px 12px rgba(245, 158, 11, 0.3); }
-    
-    /* Unavailable shift indicator */
-    .wn-unavailable {
-      font-size: 10px;
-      color: var(--muted);
-      font-style: italic;
-      padding: 2px 4px;
+    /* Who's Next shift buttons */
+    #wnList .wn-shifts { 
+      display: flex; 
+      gap: 6px; 
+      margin-top: 8px; 
+      flex-wrap: wrap; 
+      align-items: center;
     }
+    #wnList .shift-btn-group { 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+      position: relative;
+      margin-bottom: 4px;
+    }
+    #wnList .shift-btn { 
+      padding: 6px 10px; 
+      font-size: 11px; 
+      font-weight: 500; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      border: 1px solid var(--border);
+      background: var(--bg); 
+      color: var(--text);
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    #wnList .shift-btn:hover { 
+      background: var(--accent); 
+      color: white; 
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    #wnList .shift-btn.shift-full { 
+      background: var(--muted); 
+      color: white; 
+      cursor: not-allowed; 
+      opacity: 0.7;
+    }
+    #wnList .shift-btn.shift-full:hover { 
+      transform: none;
+      background: var(--muted);
+      color: white;
+    }
+    #wnList .shift-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--success);
+      color: white;
+      border-radius: 8px;
+      padding: 1px 4px;
+      font-size: 9px;
+      font-weight: 600;
+      line-height: 1;
+      min-width: 12px;
+      text-align: center;
+    }
+    #wnList .refuse-btn { 
+      padding: 6px 10px; 
+      font-size: 10px; 
+      font-weight: 600; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      border: 1px solid var(--danger);
+      background: var(--danger); 
+      color: white;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      min-width: 100px;
+    }
+    #wnList .refuse-btn:hover { 
+      background: #dc2626; 
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+    }
+    #wnList .refuse-btn.disabled { 
+      opacity: 0.5; 
+      cursor: not-allowed;
+    }
+    #wnList .refuse-btn.disabled:hover { 
+      transform: none;
+      background: var(--danger);
+      box-shadow: none;
+    }
+    #wnList .refuse-btn.refused {
+      background: #6b7280;
+      border-color: #6b7280;
+      color: white;
+      font-size: 8px;
+      cursor: default;
+    }
+    #wnList .refuse-btn.refused:hover {
+      transform: none;
+      background: #6b7280;
+      box-shadow: none;
+    }
+    #wnList .refuse-btn.pending {
+      background: #f59e0b;
+      border-color: #f59e0b;
+      cursor: wait;
+    }
+    
+    /* Accept OT button states */
+    #wnList .accept-ot-btn { 
+      padding: 6px 10px; 
+      font-size: 10px; 
+      font-weight: 600; 
+      border-radius: 5px; 
+      cursor: pointer; 
+      border: 1px solid var(--success);
+      background: var(--success); 
+      color: white;
+      transition: all 0.15s ease;
+      position: relative;
+      white-space: nowrap;
+      min-width: 100px;
+    }
+    #wnList .accept-ot-btn:hover { 
+      background: #059669; 
+      border-color: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+    #wnList .accept-ot-btn.accept-ot-assigned { 
+      background: #059669; 
+      border-color: #059669;
+      cursor: default;
+    }
+    #wnList .accept-ot-btn.accept-ot-assigned:hover { 
+      transform: none;
+      box-shadow: none;
+    }
+    #wnList .accept-ot-btn.accept-ot-full,
+    #wnList .accept-ot-btn.accept-ot-locked,
+    #wnList .accept-ot-btn.accept-ot-blocked,
+    #wnList .accept-ot-btn.accept-ot-refused { 
+      background: var(--muted); 
+      border-color: var(--muted);
+      color: white;
+      opacity: 0.7;
+      cursor: not-allowed; 
+    }
+    #wnList .accept-ot-btn.accept-ot-full:hover,
+    #wnList .accept-ot-btn.accept-ot-locked:hover,
+    #wnList .accept-ot-btn.accept-ot-blocked:hover,
+    #wnList .accept-ot-btn.accept-ot-refused:hover { 
+      transform: none;
+      background: var(--muted);
+      box-shadow: none;
+    }
+    #wnList .accept-ot-btn.pending { 
+      background: #f59e0b; 
+      border-color: #f59e0b;
+      cursor: wait;
+    }
+    #wnList .shifts-empty {
+      color: var(--muted);
+      font-size: 11px;
+      font-style: italic;
+      margin-top: 8px;
+    }
+    
     
     /* Adjust wn-item layout to accommodate buttons */
     #wnList .wn-item { flex-wrap:wrap; }
     #wnList .wn-main { display:flex; align-items:center; justify-content:space-between; width:100%; }
     #wnList .wn-buttons { width:100%; justify-content:flex-end; }
+    
     
     /* Shift display styles */
     .shift-cell { 
@@ -453,16 +606,42 @@
       background: rgba(255,255,255,0.02);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 12px;
+      padding: 16px;
     }
     
-    .overall-status {
-      margin-bottom: 12px;
+    .weekend-header {
+      margin-bottom: 16px;
+    }
+    
+    .weekend-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .weekend-title strong {
+      font-size: 15px;
+      color: var(--text);
+    }
+    
+    .weekend-dates {
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255,255,255,0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .overall-progress {
+      margin-bottom: 0;
     }
     
     .status-header {
       font-size: 13px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: var(--text);
     }
     
     .progress-bar-container {
@@ -493,30 +672,55 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 4px 6px;
-      border-radius: 4px;
-      font-size: 11px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 12px;
       background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.05);
     }
     
     .shift-status.partial {
-      background: rgba(251, 146, 60, 0.1);
+      background: rgba(251, 146, 60, 0.08);
+      border-color: rgba(251, 146, 60, 0.2);
       color: #f59e0b;
     }
     
     .shift-status.full {
-      background: rgba(239, 68, 68, 0.1);
+      background: rgba(239, 68, 68, 0.08);
+      border-color: rgba(239, 68, 68, 0.2);
       color: var(--danger);
-      font-weight: 600;
+    }
+    
+    .shift-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .shift-name {
-      flex: 1;
+      font-weight: 500;
+    }
+    
+    .full-badge {
+      background: var(--danger);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 4px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .shift-metrics {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .shift-count {
-      margin-right: 8px;
       font-weight: 600;
+      font-size: 11px;
     }
     
     .mini-progress {
@@ -588,6 +792,513 @@
       color: #e6eefb;
       text-align: right;
     }
+
+    /* === MOBILE-FIRST RESPONSIVE STYLES === */
+    @media (max-width: 768px) {
+      /* Safe area and viewport handling for iOS */
+      body {
+        padding-top: var(--safe-area-top);
+        padding-bottom: var(--safe-area-bottom);
+        padding-left: var(--safe-area-left);
+        padding-right: var(--safe-area-right);
+        min-height: 100svh; /* Use small viewport height to avoid iOS issues */
+        /* Prevent bounce scrolling on iOS */
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+        /* Prevent text selection issues on iOS */
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Re-enable text selection for inputs and editable content */
+      input, 
+      textarea, 
+      [contenteditable="true"],
+      .selectable {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+
+      /* Prevent iOS zoom on double-tap */
+      * {
+        touch-action: manipulation;
+      }
+
+      /* Allow scrolling for scrollable containers */
+      .scrollable,
+      #wnList,
+      .bottom-sheet,
+      .table-card {
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Horizontal scroll containers */
+      .ot-table {
+        touch-action: pan-x;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .container {
+        padding: var(--mobile-spacing);
+      }
+      
+      .wrap {
+        padding: var(--mobile-spacing);
+      }
+
+      /* Touch-friendly interactive elements - Apply to ALL buttons */
+      button, 
+      input[type="button"],
+      input[type="submit"],
+      .wn-btn,
+      .accept-ot-btn,
+      .refuse-btn,
+      .shift-btn,
+      [role="button"] {
+        min-height: var(--mobile-touch-target);
+        min-width: var(--mobile-touch-target);
+        padding: 12px 16px;
+        font-size: 14px;
+        border-radius: var(--mobile-border-radius);
+        /* Remove hover effects on mobile */
+        transform: none !important;
+        /* Add spacing between buttons for easier tapping */
+        margin: 2px;
+      }
+
+      /* Special handling for header toolbar buttons */
+      .toolbar button {
+        margin: 4px 2px;
+        font-size: 13px;
+      }
+
+      /* Ensure button groups have proper spacing */
+      .btn-group {
+        gap: var(--mobile-spacing);
+        flex-wrap: wrap;
+      }
+
+      /* Form buttons get extra spacing */
+      form .btn-group button,
+      form button {
+        margin: 6px 4px;
+      }
+
+      /* Better touch targets for inputs */
+      input[type="text"], 
+      input[type="number"], 
+      input[type="search"],
+      input[type="file"],
+      select,
+      textarea {
+        min-height: var(--mobile-touch-target);
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 12px 16px;
+        margin: 4px 2px;
+      }
+
+      /* Touch-friendly clickable areas */
+      .sortable,
+      [data-action],
+      .clickable,
+      tr[onclick],
+      td[onclick] {
+        min-height: var(--mobile-touch-target);
+        padding: 12px;
+      }
+
+      /* Ensure labels for checkboxes and radios have proper touch area */
+      label {
+        min-height: var(--mobile-touch-target);
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        margin: 4px 0;
+      }
+
+      /* Touch-friendly checkbox and radio inputs */
+      input[type="checkbox"],
+      input[type="radio"] {
+        min-width: 20px;
+        min-height: 20px;
+        margin-right: 12px;
+      }
+
+      /* Remove hover effects completely on mobile */
+      button:hover,
+      .wn-btn:hover,
+      .accept-ot-btn:hover,
+      .refuse-btn:hover,
+      .shift-btn:hover {
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      /* Focus states for accessibility */
+      button:focus,
+      .wn-btn:focus,
+      .accept-ot-btn:focus,
+      .refuse-btn:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      /* Sticky weekend status bar at top on mobile */
+      .mobile-weekend-status {
+        position: sticky;
+        top: var(--safe-area-top, 0);
+        z-index: 100;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        padding: var(--mobile-spacing);
+        margin: -var(--mobile-spacing) -var(--mobile-spacing) var(--mobile-spacing) -var(--mobile-spacing);
+        backdrop-filter: saturate(120%) blur(6px);
+        display: block !important; /* Show on mobile */
+      }
+
+      /* Status chips in mobile status bar */
+      .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+
+      .status-chip.filled {
+        background: var(--success);
+        color: white;
+        border-color: var(--success);
+      }
+
+      .status-chip.partial {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      .status-chip.empty {
+        background: var(--bg);
+        color: var(--muted);
+        border-color: var(--border);
+      }
+
+      /* Mobile Who's Next card layout */
+      #wnList .wn-item {
+        position: relative;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+        margin-bottom: 12px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--mobile-border-radius);
+        box-shadow: var(--shadow);
+      }
+
+      #wnList .wn-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-right: 32px; /* Space for absolute rank badge */
+      }
+
+      #wnList .wn-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      #wnList .wn-rank {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        background: var(--accent);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      /* Mobile shift buttons layout */
+      #wnList .wn-shifts {
+        margin-top: 12px;
+      }
+
+      #wnList .shift-btn-group {
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      #wnList .shift-btn,
+      #wnList .accept-ot-btn {
+        flex: 1;
+        min-width: 120px;
+        padding: 12px 16px;
+        font-size: 13px;
+        border-radius: var(--mobile-border-radius);
+      }
+
+      #wnList .refuse-btn {
+        min-width: var(--mobile-touch-target);
+        padding: 12px;
+        margin-left: 8px;
+        border-radius: var(--mobile-border-radius);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      /* Table improvements for mobile */
+      .table-card {
+        margin: 0 -var(--mobile-spacing);
+        border-radius: 0;
+      }
+
+      .ot-table {
+        font-size: 14px;
+      }
+
+      .day-cell > input[type="number"] {
+        height: 42px;
+        font-size: 14px;
+      }
+
+      /* Better spacing for mobile forms */
+      form.inline {
+        gap: var(--mobile-spacing);
+      }
+
+      .panel .body {
+        padding: 16px;
+      }
+
+      .panel .head {
+        padding: 16px;
+      }
+
+      /* Hide elements that don't work well on mobile */
+      .who-rail {
+        position: static !important;
+        width: 100% !important;
+        right: auto !important;
+        top: auto !important;
+        margin-top: 20px;
+      }
+    }
+
+    /* Hide mobile weekend status on desktop and restore desktop Who's Next layout */
+    @media (min-width: 769px) {
+      .mobile-weekend-status {
+        display: none !important;
+      }
+
+      /* Desktop Who's Next layout */
+      #wnList .wn-item {
+        position: static;
+        flex-direction: row;
+        padding: 8px 4px;
+        margin-bottom: 0;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      #wnList .wn-main {
+        padding-right: 0;
+        margin-bottom: 0;
+        flex: 1;
+      }
+
+      #wnList .wn-left {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      #wnList .wn-rank {
+        position: static;
+        width: 28px;
+        height: auto;
+        background: transparent;
+        color: var(--text);
+        border-radius: 0;
+        display: block;
+        text-align: center;
+        font-size: inherit;
+        font-weight: inherit;
+      }
+
+      #wnList .wn-buttons {
+        width: auto;
+        justify-content: flex-start;
+      }
+
+      #wnList .wn-shifts {
+        margin-top: 4px;
+      }
+
+      #wnList .shift-btn-group {
+        margin-bottom: 4px;
+        flex-wrap: nowrap;
+      }
+
+      #wnList .shift-btn,
+      #wnList .accept-ot-btn {
+        flex: none;
+        min-width: auto;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+
+      #wnList .refuse-btn {
+        min-width: auto;
+        padding: 6px 10px;
+        margin-left: 6px;
+        font-size: 11px;
+      }
+    }
+
+    /* === TOAST NOTIFICATION STYLES === */
+    .toast-container {
+      position: fixed;
+      top: calc(var(--safe-area-top, 0px) + 20px);
+      right: calc(var(--safe-area-right, 0px) + 20px);
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--panel);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: var(--mobile-border-radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 8px;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      pointer-events: auto;
+      font-size: 14px;
+      max-width: 280px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .toast.success {
+      border-left: 4px solid var(--success);
+    }
+
+    .toast.error {
+      border-left: 4px solid var(--danger);
+    }
+
+    /* === BOTTOM SHEET MODAL STYLES === */
+    .bottom-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      border-radius: 16px 16px 0 0;
+      z-index: 1000;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+      padding-bottom: calc(var(--safe-area-bottom, 0px) + 20px);
+      max-height: 80svh;
+      overflow-y: auto;
+    }
+
+    .bottom-sheet.show {
+      transform: translateY(0);
+    }
+
+    .bottom-sheet-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .bottom-sheet-backdrop.show {
+      opacity: 1;
+    }
+
+    .bottom-sheet-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      position: relative;
+    }
+
+    .bottom-sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--muted);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+
+    .bottom-sheet-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .bottom-sheet-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+
+    .bottom-sheet-body {
+      padding: 20px;
+    }
+
+    .bottom-sheet-actions {
+      padding: 0 20px 20px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .bottom-sheet-actions button {
+      flex: 1;
+      min-height: var(--mobile-touch-target);
+    }
   </style>
   <meta name="color-scheme" content="dark light" />
   <meta name="description" content="Local page to track names with list # and pass #. Stored in your browser only." />
@@ -610,6 +1321,15 @@
       </div>
     </header>
 
+    <!-- Mobile sticky weekend status bar -->
+    <div id="mobileWeekendStatus" class="mobile-weekend-status" style="display: none;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <div style="font-weight: 600; font-size: 14px;">Weekend Status</div>
+        <div id="mobileWeekendDates" style="font-size: 12px; color: var(--muted);"></div>
+      </div>
+      <div id="mobileStatusChips" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+    </div>
+
     <!-- Weekend Dates panel removed per request: this was a read-only visual summary -->
 
     <section id="entryCard" class="panel collapsible" data-collapsed="false">
@@ -629,8 +1349,8 @@
             <input id="lisNumber" name="lisNumber" type="text" placeholder="e.g., 8891" autocomplete="off" />
           </div>
           <div>
-            <label for="passNumber">Pass #</label>
-            <input id="passNumber" name="passNumber" type="text" placeholder="e.g., 12345 or A-102" autocomplete="off" required />
+            <label for="initialHours">Hours <span class="muted">(optional)</span></label>
+            <input id="initialHours" name="initialHours" type="number" inputmode="decimal" min="0" max="1000" step="0.25" placeholder="e.g., 25.5" autocomplete="off" />
           </div>
           <div class="row">
             <button type="submit" class="primary" id="saveBtn">Add</button>
@@ -713,11 +1433,11 @@
           </div>
       </div>
     </section>
-
-    <!-- Who's Next panel: read-only live ranking from least -> most hours -->
-    <section class="panel card who-card who-rail" id="whosNextPanel">
+    
+    <!-- Who's Next panel: positioned under the main table -->
+    <section class="panel card who-card" id="whosNextPanel">
       <div class="head">
-        <strong>Who’s Next</strong>
+        <strong>Who's Next</strong>
         <span class="pill" id="wnMonthPill"></span>
       </div>
       <div class="body">
@@ -729,6 +1449,7 @@
         <div class="muted" style="margin-top:8px; font-size:12px;">Reflects live totals. Edit hours in the main table.</div>
       </div>
     </section>
+
     </div>
 
     <footer class="row" style="justify-content: space-between; margin-top: 16px; color:var(--muted);">
@@ -749,6 +1470,280 @@
     // Multi-location constants
     const PEOPLE_PER_SHIFT = 2; // Each shift requires 2 people to work it
     const DEFAULT_LOCATION_COUNT = 1; // Default to single location for backward compatibility
+    
+    // Event system for click-to-assign functionality
+    const ASSIGNMENT_EVENTS_KEY = 'assignment_events_v1';
+    
+    // Event Types
+    const EVENT_TYPES = {
+      ASSIGNMENT: 'assignment',
+      REFUSAL: 'refusal',
+      MANUAL_HOURS: 'manual_hours',
+      ADJUSTMENT: 'adjustment'
+    };
+    
+    // Event factory functions
+    function createAssignmentEvent(personId, weekendKey, dateKey, shiftId, locationId = 'loc_1', hours = 8) {
+      return {
+        id: uid(),
+        type: EVENT_TYPES.ASSIGNMENT,
+        personId,
+        weekendKey,
+        dateKey,
+        shiftId,
+        locationId,
+        hours,
+        timestamp: new Date().toISOString(),
+        metadata: {
+          shiftLabel: SHIFT_DEFINITIONS[shiftId]?.shortDisplay || shiftId,
+          locationLabel: `Location ${locationId}`,
+          renderedAtTs: Date.now()
+        }
+      };
+    }
+    
+    function createRefusalEvent(personId, weekendKey, dateKey, shiftId, locationId = 'loc_1', hours = 8) {
+      return {
+        id: uid(),
+        type: EVENT_TYPES.REFUSAL,
+        personId,
+        weekendKey,
+        dateKey,
+        shiftId,
+        locationId,
+        hours,
+        timestamp: new Date().toISOString(),
+        metadata: {
+          shiftLabel: SHIFT_DEFINITIONS[shiftId]?.shortDisplay || shiftId,
+          locationLabel: `Location ${locationId}`,
+          renderedAtTs: Date.now()
+        }
+      };
+    }
+    
+    // Date mapping helper functions (bulletproof date calculation)
+    function calculateShiftDateKey(shiftId, weekendKey) {
+      const shift = SHIFT_DEFINITIONS[shiftId];
+      if (!shift) throw new Error(`Unknown shift ID: ${shiftId}`);
+      
+      const weekendFriday = new Date(weekendKey + 'T00:00:00');
+      const dayOffsets = { 'fri': 0, 'sat': 1, 'sun': 2, 'mon': 3 };
+      const startDate = new Date(weekendFriday);
+      startDate.setDate(startDate.getDate() + dayOffsets[shift.startDay]);
+      
+      return dateKey(startDate); // Returns YYYY-MM-DD format
+    }
+    
+    function calculateShiftTimestamps(shiftId, weekendKey) {
+      const shift = SHIFT_DEFINITIONS[shiftId];
+      if (!shift) throw new Error(`Unknown shift ID: ${shiftId}`);
+      
+      const weekendFriday = new Date(weekendKey + 'T00:00:00');
+      const dayOffsets = { 'fri': 0, 'sat': 1, 'sun': 2, 'mon': 3 };
+      
+      const startDate = new Date(weekendFriday);
+      startDate.setDate(startDate.getDate() + dayOffsets[shift.startDay]);
+      const [startHour, startMin] = shift.startTime.split(':').map(Number);
+      startDate.setHours(startHour, startMin, 0, 0);
+      
+      const endDate = new Date(weekendFriday);
+      endDate.setDate(endDate.getDate() + dayOffsets[shift.endDay]);
+      const [endHour, endMin] = shift.endTime.split(':').map(Number);
+      endDate.setHours(endHour, endMin, 0, 0);
+      
+      return {
+        startTs: startDate.toISOString(),
+        endTs: endDate.toISOString(),
+        dateKey: dateKey(startDate)
+      };
+    }
+    
+    // State change broadcasting system for real-time updates
+    const stateListeners = new Set();
+    
+    function subscribeToStateChanges(callback) {
+      stateListeners.add(callback);
+      return () => stateListeners.delete(callback); // Return unsubscribe function
+    }
+    
+    function broadcastStateChange(changeType, data = {}) {
+      console.log(`📡 Broadcasting state change: ${changeType}`, data);
+      stateListeners.forEach(listener => {
+        try {
+          listener(changeType, data);
+        } catch (error) {
+          console.error('State listener error:', error);
+        }
+      });
+    }
+    
+    // Event persistence system
+    function loadAssignmentEvents() {
+      try {
+        const stored = localStorage.getItem(ASSIGNMENT_EVENTS_KEY);
+        return stored ? JSON.parse(stored) : [];
+      } catch (_) { 
+        return []; 
+      }
+    }
+    
+    function saveAssignmentEvent(event) {
+      try {
+        const events = loadAssignmentEvents();
+        events.push(event);
+        localStorage.setItem(ASSIGNMENT_EVENTS_KEY, JSON.stringify(events));
+        broadcastStateChange('EVENT_CREATED', { event });
+        return event;
+      } catch (error) {
+        console.error('Failed to save assignment event:', error);
+        return null;
+      }
+    }
+    
+    // ShiftChip component architecture
+    function createShiftChip(personId, shiftId, weekendKey, locationId = 'loc_1', actionType = 'assignment') {
+      const shift = SHIFT_DEFINITIONS[shiftId];
+      if (!shift) throw new Error(`Unknown shift ID: ${shiftId}`);
+      
+      const timestamps = calculateShiftTimestamps(shiftId, weekendKey);
+      const eligibility = canWorkShift(personId, shiftId, weekendKey);
+      const capacity = getShiftCapacity(shiftId);
+      const assigned = getShiftAssignedCount(shiftId, weekendKey);
+      const hasCapacity = assigned < capacity;
+      
+      return {
+        // Identity & context
+        personId,
+        weekendKey,
+        dateKey: timestamps.dateKey,
+        renderedAtTs: Date.now(),
+        
+        // Shift detail
+        shiftId,
+        shiftLabel: shift.shortDisplay,
+        startTs: timestamps.startTs,
+        endTs: timestamps.endTs,
+        hours: shift.chargeableHours,
+        
+        // Location / capacity
+        locationId,
+        locationLabel: `Location ${locationId}`,
+        slotRef: { weekendKey, dateKey: timestamps.dateKey, shiftId, locationId },
+        
+        // Eligibility (precomputed)
+        eligible: eligibility.eligible && hasCapacity,
+        eligibilityReason: !eligibility.eligible ? eligibility.reason : 
+                          !hasCapacity ? `Shift full (${assigned}/${capacity})` : 'Available',
+        lastWorkedEndTs: getLastWorkedTourEndTime(personId, timestamps.startTs, weekendKey),
+        
+        // Action type
+        defaultAction: actionType, // 'assignment' or 'refusal'
+        
+        // UI metadata
+        cssClass: eligibility.eligible && hasCapacity ? 'chip-available' : 'chip-disabled',
+        title: eligibility.eligible && hasCapacity ? 
+               `Assign ${shift.shortDisplay} (${shift.chargeableHours}h)` :
+               eligibility.reason || `No capacity (${assigned}/${capacity})`
+      };
+    }
+    
+    // Generate all eligible shift chips for a person (multi-location + eligibility engine)
+    
+    // === COMPREHENSIVE ELIGIBILITY ENGINE ===
+    // Pre-compute all eligibility data for fast UI rendering
+    
+    function createEligibilitySnapshot(weekendKey = getCurrentWeekendKey()) {
+      console.log('🔍 Creating eligibility snapshot for weekend:', weekendKey);
+      
+      const snapshot = {
+        weekendKey,
+        timestamp: Date.now(),
+        people: {},
+        shifts: {},
+        capacity: {
+          total: getTotalWeekendCapacity(),
+          assigned: getTotalAssignedPeople(weekendKey)
+        }
+      };
+      
+      // Pre-compute shift capacity and assignment data
+      Object.keys(SHIFT_DEFINITIONS).forEach(shiftId => {
+        snapshot.shifts[shiftId] = {
+          capacity: getShiftCapacity(shiftId),
+          assigned: getShiftAssignedCount(shiftId, weekendKey),
+          isFull: isShiftAtCapacity(shiftId, weekendKey),
+          definition: SHIFT_DEFINITIONS[shiftId]
+        };
+      });
+      
+      // Pre-compute eligibility for each person
+      state.items.forEach(person => {
+        const personId = person.id;
+        const personEligibility = {
+          id: personId,
+          name: person.name,
+          excluded: isPersonExcluded(personId, weekendKey),
+          currentShifts: getPersonShifts(personId, weekendKey),
+          eligibleShifts: {},
+          availableChips: []
+        };
+        
+        // Check eligibility for each shift
+        Object.keys(SHIFT_DEFINITIONS).forEach(shiftId => {
+          const eligibility = canWorkShift(personId, shiftId, weekendKey);
+          const isRefused = isShiftRefused(personId, shiftId, weekendKey);
+          const shiftData = snapshot.shifts[shiftId];
+          
+          personEligibility.eligibleShifts[shiftId] = {
+            eligible: eligibility.eligible && !personEligibility.excluded && !shiftData.isFull,
+            reason: personEligibility.excluded 
+              ? 'Excluded for this weekend'
+              : shiftData.isFull 
+                ? 'Shift at full capacity'
+                : eligibility.reason || 'Eligible',
+            refused: isRefused,
+            hasCapacity: !shiftData.isFull,
+            capacity: shiftData.capacity,
+            assigned: shiftData.assigned
+          };
+        });
+        
+        snapshot.people[personId] = personEligibility;
+      });
+      
+      console.log(`✅ Eligibility snapshot complete: ${Object.keys(snapshot.people).length} people, ${Object.keys(snapshot.shifts).length} shifts`);
+      return snapshot;
+    }
+    
+    // Cache the eligibility snapshot for performance
+    let eligibilityCache = null;
+    let eligibilityCacheTime = 0;
+    const ELIGIBILITY_CACHE_TTL = 30000; // 30 seconds
+    
+    function getEligibilitySnapshot(weekendKey = getCurrentWeekendKey(), forceRefresh = false) {
+      const now = Date.now();
+      
+      if (!forceRefresh && eligibilityCache && 
+          eligibilityCache.weekendKey === weekendKey &&
+          (now - eligibilityCacheTime) < ELIGIBILITY_CACHE_TTL) {
+        return eligibilityCache;
+      }
+      
+      eligibilityCache = createEligibilitySnapshot(weekendKey);
+      eligibilityCacheTime = now;
+      return eligibilityCache;
+    }
+    
+    // Invalidate eligibility cache when data changes
+    function invalidateEligibilityCache() {
+      console.log('🗑️ Invalidating eligibility cache');
+      eligibilityCache = null;
+      eligibilityCacheTime = 0;
+    }
+    
+    
+    // Render shift chips for a person (for Who's Next panel)
+    
     
     // MTA Overtime Weekend Shift Definitions
     const SHIFT_DEFINITIONS = {
@@ -841,7 +1836,7 @@
       form: document.getElementById('entryForm'),
       name: document.getElementById('name'),
       lisNumber: document.getElementById('lisNumber'),
-      passNumber: document.getElementById('passNumber'),
+      initialHours: document.getElementById('initialHours'),
       saveBtn: document.getElementById('saveBtn'),
       cancelEditBtn: document.getElementById('cancelEditBtn'),
       search: document.getElementById('search'),
@@ -887,7 +1882,6 @@
             if (!x || typeof x !== 'object') return false;
             // Ensure required fields exist and are strings
             if (typeof x.name !== 'string' || !x.name.trim()) return false;
-            if (typeof x.passNumber !== 'string' || !x.passNumber.trim()) return false;
             // Don't allow date strings in list number field
             if (x.lisNumber && typeof x.lisNumber === 'string') {
               const lower = x.lisNumber.toLowerCase();
@@ -963,6 +1957,18 @@
       if (!state.excluded[weekendKey]) state.excluded[weekendKey] = {};
       state.excluded[weekendKey][personId] = reason; // 'done' or 'nothere'
       saveExclusions();
+      
+      // Invalidate eligibility cache after exclusion
+      invalidateEligibilityCache();
+      
+      // Trigger instant UI updates
+      broadcastStateChange('PERSON_EXCLUDED', {
+        personId,
+        weekendKey,
+        reason,
+        excluded: true
+      });
+      
       renderWhosNext(); // Update the display immediately
     }
 
@@ -975,6 +1981,18 @@
           delete state.excluded[weekendKey];
         }
         saveExclusions();
+        
+        // Invalidate eligibility cache after inclusion
+        invalidateEligibilityCache();
+        
+        // Trigger instant UI updates
+        broadcastStateChange('PERSON_EXCLUDED', {
+          personId,
+          weekendKey,
+          reason: null,
+          excluded: false
+        });
+        
         renderWhosNext();
       }
     }
@@ -1053,6 +2071,10 @@
       };
       
       saveRefusals();
+      
+      // Invalidate eligibility cache after refusal
+      invalidateEligibilityCache();
+      
       renderWhosNext(); // Update the display immediately
     }
     
@@ -1198,9 +2220,42 @@
     // Get current number of people assigned to a specific shift
     function getShiftAssignedCount(shiftCode, weekendKey = getCurrentWeekendKey()){
       const assignments = state.shifts[weekendKey] || {};
-      return Object.values(assignments)
-        .filter(personData => personData.shifts && personData.shifts.some(s => s.shiftCode === shiftCode))
+      const count = Object.values(assignments)
+        .filter(personData => personData.shifts && personData.shifts.some(s => s.shiftCode === shiftCode && s.worked === true))
         .length;
+      // Debug: console.log(`⚡ getShiftAssignedCount(${shiftCode}): ${count} assignments (only worked shifts)`);
+      return count;
+    }
+    
+    // Get active shifts for the current weekend/location (for Who's Next shift buttons)
+    function getActiveShiftsForWeekend(weekendKey = getCurrentWeekendKey()) {
+      return Object.values(SHIFT_DEFINITIONS)
+        .sort((a, b) => a.sequence - b.sequence)
+        .map(shift => {
+          const assigned = getShiftAssignedCount(shift.code, weekendKey);
+          const capacity = getShiftCapacity(shift.code);
+          const remaining = Math.max(0, capacity - assigned);
+          const isFull = assigned >= capacity;
+          
+          return {
+            code: shift.code,
+            name: shift.name,
+            shortDisplay: shift.shortDisplay,
+            chargeableHours: shift.chargeableHours,
+            sequence: shift.sequence,
+            assigned,
+            capacity,
+            remaining,
+            isFull
+          };
+        });
+    }
+    
+    // Get remaining slots for a specific shift (for badge display)
+    function getShiftRemainingSlots(shiftCode, weekendKey = getCurrentWeekendKey()) {
+      const assigned = getShiftAssignedCount(shiftCode, weekendKey);
+      const capacity = getShiftCapacity(shiftCode);
+      return Math.max(0, capacity - assigned);
     }
     
     // Check if a shift is at full capacity
@@ -1210,53 +2265,124 @@
       return assignedCount >= capacity;
     }
     
-    // Get total number of people assigned across all shifts
+    // Get total number of people assigned across all shifts (only counts actually worked shifts)
     function getTotalAssignedPeople(weekendKey = getCurrentWeekendKey()){
       const assignments = state.shifts[weekendKey] || {};
-      return Object.keys(assignments).length;
+      return Object.values(assignments)
+        .filter(personData => personData.shifts && personData.shifts.some(s => s.worked === true))
+        .length;
     }
     
     // Render weekend capacity summary
     function renderWeekendSummary(weekendKey = getCurrentWeekendKey()){
-      if (!el.weekendSummary) return;
+      console.log('🔄 renderWeekendSummary called with weekendKey:', weekendKey);
+      
+      if (!el.weekendSummary) {
+        alert('Weekend Summary element not found!');
+        return;
+      }
       
       const totalAssigned = getTotalAssignedPeople(weekendKey);
       const totalCapacity = getTotalWeekendCapacity();
       const percentFilled = totalCapacity > 0 ? Math.round((totalAssigned / totalCapacity) * 100) : 0;
       
-      // Get per-shift breakdown
-      const shiftBreakdown = Object.values(SHIFT_DEFINITIONS).map(shift => {
-        const assigned = getShiftAssignedCount(shift.code, weekendKey);
-        const capacity = getShiftCapacity(shift.code);
-        const percentage = capacity > 0 ? Math.round((assigned / capacity) * 100) : 0;
-        return {
-          name: shift.shortDisplay,
-          assigned,
-          capacity,
-          percentage,
-          isFull: assigned >= capacity
-        };
+      console.log('📊 Weekend summary data:', {
+        weekendKey,
+        totalAssigned,
+        totalCapacity,
+        percentFilled,
+        stateShifts: state.shifts[weekendKey] || {}
       });
+      
+      // Calculate weekend date range (Friday → Monday)
+      const weekendDate = new Date(weekendKey);
+      const monday = new Date(weekendDate);
+      monday.setDate(monday.getDate() + 3); // Friday + 3 = Monday
+      
+      const dateFormat = { month: 'short', day: 'numeric' };
+      const fridayStr = weekendDate.toLocaleDateString(undefined, dateFormat);
+      const mondayStr = monday.toLocaleDateString(undefined, dateFormat);
+      const dateRangeStr = `${fridayStr} → ${mondayStr}`;
+      
+      // Get previous weekend info for context
+      const prevWeekend = getPreviousWeekend();
+      const prevFridayStr = prevWeekend.friday.toLocaleDateString(undefined, dateFormat);
+      const prevMondayStr = prevWeekend.monday.toLocaleDateString(undefined, dateFormat);
+      const prevDateRangeStr = `${prevFridayStr} → ${prevMondayStr}`;
+      
+      // Determine status text based on current day
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      let statusText = '';
+      if (dayOfWeek >= 2 && dayOfWeek <= 4) { // Tue-Thu
+        statusText = `Working for: ${dateRangeStr} • Last: ${prevDateRangeStr}`;
+      } else {
+        statusText = dateRangeStr;
+      }
+      
+      // Get per-shift breakdown in proper order (sequence-based)
+      const shiftBreakdown = Object.values(SHIFT_DEFINITIONS)
+        .sort((a, b) => a.sequence - b.sequence)
+        .map(shift => {
+          const assigned = getShiftAssignedCount(shift.code, weekendKey);
+          const capacity = getShiftCapacity(shift.code);
+          const percentage = capacity > 0 ? Math.round((assigned / capacity) * 100) : 0;
+          
+          console.log(`🔍 Shift ${shift.code}:`, {
+            assigned,
+            capacity,
+            percentage,
+            locationCount: state.locationCount
+          });
+          
+          let status = 'empty';
+          if (assigned >= capacity) {
+            status = 'full';
+          } else if (assigned > 0) {
+            status = 'partial';
+          }
+          
+          return {
+            name: shift.name, // Use full name for better display
+            shortDisplay: shift.shortDisplay,
+            assigned,
+            capacity,
+            percentage,
+            status,
+            isFull: assigned >= capacity
+          };
+        });
       
       const summaryHtml = `
         <div class="weekend-capacity-summary">
-          <div class="overall-status">
-            <div class="status-header">
-              <strong>Weekend Status:</strong> ${totalAssigned}/${totalCapacity} positions filled (${percentFilled}%)
+          <div class="weekend-header">
+            <div class="weekend-title">
+              <strong>Weekend Status</strong>
+              <span class="weekend-dates">${statusText}</span>
             </div>
-            <div class="progress-bar-container">
-              <div class="progress-bar">
-                <div class="progress-fill" style="width: ${percentFilled}%"></div>
+            <div class="overall-progress">
+              <div class="status-header">
+                ${totalAssigned}/${totalCapacity} positions filled (${percentFilled}%)
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${percentFilled}%"></div>
+                </div>
               </div>
             </div>
           </div>
           <div class="shift-breakdown">
             ${shiftBreakdown.map(shift => `
-              <div class="shift-status ${shift.isFull ? 'full' : shift.assigned > 0 ? 'partial' : 'empty'}">
-                <span class="shift-name">${shift.name}</span>
-                <span class="shift-count">${shift.assigned}/${shift.capacity}</span>
-                <div class="mini-progress">
-                  <div class="mini-fill" style="width: ${shift.percentage}%"></div>
+              <div class="shift-status ${shift.status}">
+                <div class="shift-info">
+                  <span class="shift-name">${shift.shortDisplay}</span>
+                  ${shift.isFull ? '<span class="full-badge">FULL</span>' : ''}
+                </div>
+                <div class="shift-metrics">
+                  <span class="shift-count">${shift.assigned}/${shift.capacity}</span>
+                  <div class="mini-progress">
+                    <div class="mini-fill" style="width: ${shift.percentage}%"></div>
+                  </div>
                 </div>
               </div>
             `).join('')}
@@ -1264,7 +2390,44 @@
         </div>
       `;
       
+      console.log('🎨 Setting weekend summary HTML:', summaryHtml);
       el.weekendSummary.innerHTML = summaryHtml;
+      
+      // Update mobile weekend status bar
+      const mobileStatus = document.getElementById('mobileWeekendStatus');
+      const mobileStatusChips = document.getElementById('mobileStatusChips');
+      const mobileWeekendDates = document.getElementById('mobileWeekendDates');
+      
+      if (mobileStatus && mobileStatusChips && mobileWeekendDates) {
+        // Update mobile dates
+        mobileWeekendDates.textContent = statusText;
+        
+        // Create chips for each shift
+        const chipsHtml = shiftBreakdown.map(shift => {
+          const remaining = Math.max(0, shift.capacity - shift.assigned);
+          let chipClass = 'status-chip ';
+          
+          if (shift.assigned >= shift.capacity) {
+            chipClass += 'filled';
+          } else if (shift.assigned > 0) {
+            chipClass += 'partial';
+          } else {
+            chipClass += 'empty';
+          }
+          
+          return `
+            <div class="${chipClass}">
+              <span>${shift.shortDisplay}</span>
+              <span>${remaining} left</span>
+            </div>
+          `;
+        }).join('');
+        
+        mobileStatusChips.innerHTML = chipsHtml;
+        console.log('📱 Mobile weekend status updated');
+      }
+      
+      console.log('✅ Weekend summary updated in DOM');
     }
     
     // Update location count and save configuration
@@ -1326,6 +2489,27 @@
         return false;
       }
       
+      // Check if person is already assigned to this shift (prevent double-assignment)
+      const existingPersonShifts = state.shifts[weekendKey]?.[personId];
+      if (existingPersonShifts && existingPersonShifts.shifts) {
+        const alreadyAssigned = existingPersonShifts.shifts.some(s => s.shiftCode === shiftCode);
+        if (alreadyAssigned) {
+          const message = `Person is already assigned to ${shift.name}`;
+          console.log('❌ Double-assignment prevented:', message);
+          alert(message);
+          return false;
+        }
+      }
+      
+      // Check capacity (defensive check to prevent over-assignment)
+      const currentAssigned = getShiftAssignedCount(shiftCode, weekendKey);
+      const capacity = getShiftCapacity(shiftCode);
+      if (currentAssigned >= capacity) {
+        const message = `Cannot assign shift: ${shift.name} is full (${currentAssigned}/${capacity})`;
+        alert(message);
+        return false;
+      }
+      
       // If this shift was previously refused, un-refuse it when assigning
       const wasRefused = isShiftRefused(personId, shiftCode, weekendKey);
       if (wasRefused) {
@@ -1372,6 +2556,10 @@
       addHoursForShift(personId, newShiftData, weekendKey);
       
       saveShifts();
+      
+      // Invalidate eligibility cache after assignment
+      invalidateEligibilityCache();
+      
       console.log('✅ ASSIGN SHIFT COMPLETED SUCCESSFULLY');
       return true;
     }
@@ -1414,6 +2602,10 @@
       }
       
       saveShifts();
+      
+      // Invalidate eligibility cache after removing shift
+      invalidateEligibilityCache();
+      
       return true;
     }
 
@@ -1468,6 +2660,10 @@
       
       console.log(`   After adding hours, state.hours[${personId}]:`, state.hours[personId]);
       
+      // CRITICAL: Also save hours to the shift-specific system that the main table reads from
+      setShiftHours(personId, shiftData.shiftCode, weekendKey, shift.chargeableHours);
+      console.log(`   ✅ Also saved ${shift.chargeableHours}h to shift system for ${shiftData.shiftCode}`);
+      
       saveHours();
       return true;
     }
@@ -1502,6 +2698,10 @@
           }
         }
       }
+      
+      // CRITICAL: Also remove hours from the shift-specific system that the main table reads from
+      setShiftHours(personId, shiftData.shiftCode, weekendKey, 0);
+      console.log(`   ✅ Also removed hours from shift system for ${shiftData.shiftCode}`);
       
       saveHours();
       return true;
@@ -1570,19 +2770,63 @@
         return { eligible: true }; // No prior shifts, can work any shift
       }
       
-      // Get last shift worked
-      const lastShift = personData.shifts[personData.shifts.length - 1];
-      const lastShiftDef = SHIFT_DEFINITIONS[lastShift.shiftCode];
+      // Calculate the proposed shift start time
+      const weekend = getCurrentWeekend();
+      const proposedShiftDates = calculateShiftDates(shift, weekend);
+      const proposedStartTime = proposedShiftDates.start;
       
-      // Rule: After 16-hour shift, need 8-hour break (ONLY if they actually worked it)
-      if (lastShiftDef.totalHours >= 16 && lastShift.worked === true) {
-        const breakHours = calculateBreakHours(lastShift.endTime, shift);
-        if (breakHours < 8) {
-          return {
-            eligible: false,
-            reason: `Needs 8-hour break after working 16-hour shift (only ${breakHours.toFixed(1)}h break)`
-          };
+      // Find the most recent worked tour that ends before the proposed shift start
+      const lastWorkedTourEndTime = getLastWorkedTourEndTime(personId, proposedStartTime, weekendKey);
+      
+      console.log(`🔍 Overtime Eligibility Check for ${personId} -> ${shiftCode}`);
+      console.log(`   Proposed shift start: ${proposedStartTime}`);
+      console.log(`   Last worked tour end: ${lastWorkedTourEndTime || 'None'}`);
+      console.log(`   Current person shifts:`, personData.shifts);
+      
+      // Debug: Show which shifts are actually worked vs refused
+      const allShifts = personData.shifts.map(s => ({
+        code: s.shiftCode,
+        worked: s.worked,
+        hours: s.totalHours
+      }));
+      console.log(`   Shift breakdown (worked only count for break rules):`, allShifts);
+      
+      if (lastWorkedTourEndTime) {
+        // Calculate rest hours between the end of the last worked tour and the proposed shift start
+        const lastTourEnd = new Date(lastWorkedTourEndTime);
+        const proposedStart = new Date(proposedStartTime);
+        const restHours = (proposedStart - lastTourEnd) / (1000 * 60 * 60);
+        
+        console.log(`   Rest hours available: ${restHours.toFixed(1)}h`);
+        
+        // Rule: Need 8-hour break after any worked tour that ended at/over 16 hours
+        // Find the tour that ended at lastWorkedTourEndTime to check its total hours
+        const workedShifts = personData.shifts.filter(shift => {
+          const shiftEnd = new Date(shift.endTime);
+          return shift.worked === true && shiftEnd <= new Date(proposedStartTime);
+        });
+        
+        if (workedShifts.length > 0) {
+          workedShifts.sort((a, b) => new Date(a.endTime) - new Date(b.endTime));
+          const mostRecentShift = workedShifts[workedShifts.length - 1];
+          const lastTour = findContinuousTourEndingWith(workedShifts, mostRecentShift);
+          
+          console.log(`   Last tour: ${lastTour.totalHours}h total (${lastTour.isLongTour ? '≥16h' : '<16h'})`);
+          console.log(`   Last tour shifts: ${lastTour.shifts.map(s => SHIFT_DEFINITIONS[s.shiftCode].shortDisplay).join(' + ')}`);
+          
+          if (lastTour.isLongTour && restHours < 8) {
+            console.log(`   ❌ BLOCKED: Insufficient rest after ${lastTour.totalHours}h tour`);
+            console.log(`   ❌ SPECIFIC: Trying ${shiftCode} after working ${lastTour.shifts.map(s => s.shiftCode).join('+')} with ${restHours}h break`);
+            return {
+              eligible: false,
+              reason: `Needs 8-hour break after working ${lastTour.totalHours}-hour tour (only ${restHours.toFixed(1)}h break)`
+            };
+          } else {
+            console.log(`   ✅ REST OK: ${restHours >= 8 ? 'Adequate rest' : 'Tour <16h, no rest required'}`);
+          }
         }
+      } else {
+        console.log(`   ✅ NO PRIOR TOURS: Eligible for any shift`);
       }
       
       // Rule: Can't exceed 16 consecutive hours
@@ -1604,6 +2848,91 @@
       return { eligible: true };
     }
 
+    // Get the end time of the most recent worked tour that ends on or before the given time
+    function getLastWorkedTourEndTime(personId, beforeTime, weekendKey){
+      const personData = state.shifts[weekendKey]?.[personId];
+      if (!personData || !personData.shifts || personData.shifts.length === 0) {
+        return null; // No shifts worked
+      }
+      
+      const beforeTimestamp = new Date(beforeTime);
+      let lastWorkedTourEnd = null;
+      
+      // Find all worked shifts that end before the given time
+      const workedShifts = personData.shifts.filter(shift => {
+        const shiftEnd = new Date(shift.endTime);
+        return shift.worked === true && shiftEnd <= beforeTimestamp;
+      });
+      
+      if (workedShifts.length === 0) {
+        return null; // No worked shifts before the given time
+      }
+      
+      // Sort by end time to find continuous tours
+      workedShifts.sort((a, b) => new Date(a.endTime) - new Date(b.endTime));
+      
+      // Find the actual end of the most recent continuous tour
+      const mostRecentShift = workedShifts[workedShifts.length - 1];
+      const continuousTour = findContinuousTourEndingWith(workedShifts, mostRecentShift);
+      
+      return continuousTour.actualEndTime;
+    }
+    
+    // Check if shifts form a continuous tour (back-to-back with <1 hour gaps)
+    function isContinuousTour(shifts){
+      if (shifts.length <= 1) return true;
+      
+      // Sort shifts by start time
+      const sortedShifts = shifts.slice().sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+      
+      for (let i = 1; i < sortedShifts.length; i++) {
+        const prevEnd = new Date(sortedShifts[i-1].endTime);
+        const currStart = new Date(sortedShifts[i].startTime);
+        const gapHours = (currStart - prevEnd) / (1000 * 60 * 60);
+        
+        if (gapHours >= 1) {
+          return false; // Gap of 1 hour or more breaks continuity
+        }
+      }
+      
+      return true;
+    }
+    
+    // Find the continuous tour that ends with a specific shift
+    function findContinuousTourEndingWith(allShifts, targetShift){
+      const targetEndTime = new Date(targetShift.endTime);
+      
+      // Start with the target shift and work backwards to find the continuous tour
+      let tourShifts = [targetShift];
+      let tourStart = new Date(targetShift.startTime);
+      let tourEnd = targetEndTime;
+      let totalHours = targetShift.totalHours;
+      
+      // Work backwards to find connected shifts
+      for (let i = allShifts.length - 2; i >= 0; i--) {
+        const candidateShift = allShifts[i];
+        const candidateEnd = new Date(candidateShift.endTime);
+        const gapHours = (tourStart - candidateEnd) / (1000 * 60 * 60);
+        
+        if (gapHours < 1 && gapHours >= 0) {
+          // This shift connects to our tour (ends within 1 hour of tour start)
+          tourShifts.unshift(candidateShift);
+          tourStart = new Date(candidateShift.startTime);
+          totalHours += candidateShift.totalHours;
+        } else {
+          break; // Gap is too large, tour starts here
+        }
+      }
+      
+      return {
+        shifts: tourShifts,
+        actualStartTime: tourStart.toISOString(),
+        actualEndTime: tourEnd.toISOString(),
+        totalHours: totalHours,
+        isLongTour: totalHours >= 16
+      };
+    }
+    
     // Calculate break hours between shifts
     function calculateBreakHours(lastEndTime, nextShift){
       const lastEnd = new Date(lastEndTime);
@@ -1661,6 +2990,603 @@
       }
       
       return null; // All shifts at capacity
+    }
+    
+    // === ACCEPT OT ELIGIBILITY POOL LOGIC ===
+    
+    // Get the eligibility pool for a specific shift (people who should see Accept OT button)
+    function getEligibilityPoolForShift(shiftCode, weekendKey = getCurrentWeekendKey()) {
+      const capacity = getShiftCapacity(shiftCode);
+      const assigned = getShiftAssignedCount(shiftCode, weekendKey);
+      const remaining = capacity - assigned;
+      
+      if (remaining <= 0) {
+        return []; // No capacity, no one is eligible
+      }
+      
+      // Get all non-excluded people with their current totals
+      const allPeople = state.items
+        .filter(person => !isPersonExcluded(person.id, weekendKey))
+        .map(person => ({
+          id: person.id,
+          name: person.name,
+          total: effectiveTotal(person.id),
+          listNumber: parseInt(person.lisNumber) || 99999, // Parse list number, default to high number if invalid
+          lastChange: getLastChange(person.id)
+        }))
+        .sort((a, b) => {
+          // Sort by total hours (ascending), then by list number (ascending), then by lastChange (ascending)
+          if (a.total !== b.total) return a.total - b.total;
+          if (a.listNumber !== b.listNumber) return a.listNumber - b.listNumber;
+          return a.lastChange - b.lastChange;
+        });
+      
+      // Filter for people who can actually work this shift
+      const eligiblePeople = allPeople.filter(person => {
+        const eligibility = canWorkShift(person.id, shiftCode, weekendKey);
+        const alreadyAssigned = isPersonAssignedToShift(person.id, shiftCode, weekendKey);
+        const hasRefused = isShiftRefused(person.id, shiftCode, weekendKey);
+        
+        return eligibility.eligible && !alreadyAssigned && !hasRefused;
+      });
+      
+      // Return only the lowest-hours pool, limited to available slots
+      // This implements the fairness requirement
+      const fairnessPool = eligiblePeople.slice(0, remaining);
+      console.log(`🎯 Fairness Pool for ${shiftCode}: ${fairnessPool.map(p => `${p.name}(${p.total}h, #${p.listNumber})`).join(', ')}`);
+      return fairnessPool;
+    }
+    
+    // Check if a specific person is in the fairness pool for a shift (without pre-filtering)
+    function checkPersonInFairnessPool(personId, shiftCode, weekendKey = getCurrentWeekendKey()) {
+      const capacity = getShiftCapacity(shiftCode);
+      const assigned = getShiftAssignedCount(shiftCode, weekendKey);
+      const remaining = capacity - assigned;
+      
+      if (remaining <= 0) {
+        return { eligible: false, reason: `Shift is full (${assigned}/${capacity})` };
+      }
+      
+      // Get ALL non-excluded people with their current totals  
+      const allPeople = state.items
+        .filter(person => !isPersonExcluded(person.id, weekendKey))
+        .map(person => ({
+          id: person.id,
+          name: person.name,
+          total: effectiveTotal(person.id),
+          listNumber: parseInt(person.lisNumber) || 99999, // Parse list number, default to high number if invalid
+          lastChange: getLastChange(person.id)
+        }))
+        .sort((a, b) => {
+          // Sort by total hours (ascending), then by list number (ascending), then by lastChange (ascending)
+          if (a.total !== b.total) return a.total - b.total;
+          if (a.listNumber !== b.listNumber) return a.listNumber - b.listNumber;
+          return a.lastChange - b.lastChange;
+        });
+      
+      // Filter for people who can actually work this shift (eligibility rules)
+      const eligiblePeople = allPeople.filter(person => {
+        const eligibility = canWorkShift(person.id, shiftCode, weekendKey);
+        const alreadyAssigned = isPersonAssignedToShift(person.id, shiftCode, weekendKey);
+        const hasRefused = isShiftRefused(person.id, shiftCode, weekendKey);
+        
+        return eligibility.eligible && !alreadyAssigned && !hasRefused;
+      });
+      
+      // Find this person's position in the eligible list
+      const personIndex = eligiblePeople.findIndex(p => p.id === personId);
+      if (personIndex === -1) {
+        return { eligible: false, reason: 'Not eligible due to break/rest rules or already assigned/refused' };
+      }
+      
+      // Check if they're in the fairness pool (top N people where N = remaining slots)
+      if (personIndex < remaining) {
+        return { eligible: true };
+      } else {
+        // They're eligible but not in the fairness pool
+        const personTotal = eligiblePeople[personIndex].total;
+        const personListNum = eligiblePeople[personIndex].listNumber;
+        const cutoffPerson = eligiblePeople[remaining - 1];
+        
+        if (personTotal === cutoffPerson.total) {
+          // Same hours, but higher list number
+          return { 
+            eligible: false, 
+            reason: `Tied at ${personTotal}h but offered to lower list numbers (need list #≤${cutoffPerson.listNumber}, you're #${personListNum})`
+          };
+        } else {
+          // Higher hours
+          return { 
+            eligible: false, 
+            reason: `Offered to people with fewer hours (need ≤${cutoffPerson.total}h, you have ${personTotal}h)`
+          };
+        }
+      }
+    }
+    
+    // Check if person is already assigned to a specific shift
+    function isPersonAssignedToShift(personId, shiftCode, weekendKey) {
+      const personShifts = getPersonShifts(personId, weekendKey);
+      return personShifts?.shifts?.some(s => s.shiftCode === shiftCode) || false;
+    }
+    
+    // Get Accept OT button state for a person and shift
+    function getAcceptOTButtonState(personId, shiftCode, weekendKey = getCurrentWeekendKey()) {
+      // Check if already assigned
+      if (isPersonAssignedToShift(personId, shiftCode, weekendKey)) {
+        return {
+          state: 'assigned',
+          label: 'Assigned',
+          disabled: true,
+          cssClass: 'accept-ot-assigned',
+          title: 'Already assigned to this shift'
+        };
+      }
+      
+      // Check capacity
+      const capacity = getShiftCapacity(shiftCode);
+      const assigned = getShiftAssignedCount(shiftCode, weekendKey);
+      if (assigned >= capacity) {
+        return {
+          state: 'full',
+          label: 'Full',
+          disabled: true,
+          cssClass: 'accept-ot-full',
+          title: `Shift is full (${assigned}/${capacity})`
+        };
+      }
+      
+      // Check eligibility (rest rules, etc.)
+      const eligibility = canWorkShift(personId, shiftCode, weekendKey);
+      if (!eligibility.eligible) {
+        return {
+          state: 'rest-blocked',
+          label: 'Blocked',
+          disabled: true,
+          cssClass: 'accept-ot-blocked',
+          title: eligibility.reason
+        };
+      }
+      
+      // Check if person refused this shift
+      if (isShiftRefused(personId, shiftCode, weekendKey)) {
+        return {
+          state: 'refused',
+          label: 'Refused',
+          disabled: true,
+          cssClass: 'accept-ot-refused',
+          title: 'You have refused this shift'
+        };
+      }
+      
+      // Check if person is in fairness pool (instead of using pre-filtered pool)
+      const isInFairnessPool = checkPersonInFairnessPool(personId, shiftCode, weekendKey);
+      
+      if (!isInFairnessPool.eligible) {
+        return {
+          state: 'locked',
+          label: 'Locked',
+          disabled: true,
+          cssClass: 'accept-ot-locked',
+          title: isInFairnessPool.reason
+        };
+      }
+      
+      // Available for acceptance
+      return {
+        state: 'available',
+        label: 'Accept OT',
+        disabled: false,
+        cssClass: 'accept-ot-available',
+        title: `Accept ${SHIFT_DEFINITIONS[shiftCode]?.shortDisplay} shift`
+      };
+    }
+    
+    // === REFUSAL BUTTON LOGIC ===
+    
+    // Get Refusal button state for a person and shift
+    function getRefusalButtonState(personId, shiftCode, weekendKey = getCurrentWeekendKey()) {
+      // Check if person already refused this shift
+      if (isShiftRefused(personId, shiftCode, weekendKey)) {
+        return {
+          state: 'refused',
+          label: 'Refused',
+          disabled: true,
+          cssClass: 'refuse-btn refused',
+          title: 'You have refused this shift'
+        };
+      }
+      
+      // Check if person is already assigned to this shift
+      if (isPersonAssignedToShift(personId, shiftCode, weekendKey)) {
+        return {
+          state: 'assigned',
+          label: 'R',
+          disabled: true,
+          cssClass: 'refuse-btn disabled',
+          title: 'Already assigned'
+        };
+      }
+      
+      // Check if shift is archived/canceled (capacity = 0 would indicate this)
+      const capacity = getShiftCapacity(shiftCode);
+      if (capacity <= 0) {
+        return {
+          state: 'closed',
+          label: 'R',
+          disabled: true,
+          cssClass: 'refuse-btn disabled',
+          title: 'Shift closed/canceled'
+        };
+      }
+      
+      // Check if shift is full (no longer being offered)
+      const assigned = getShiftAssignedCount(shiftCode, weekendKey);
+      if (assigned >= capacity) {
+        return {
+          state: 'full',
+          label: 'R',
+          disabled: true,
+          cssClass: 'refuse-btn disabled',
+          title: 'Shift is full'
+        };
+      }
+      
+      // Check if person is in fairness pool (same logic as Accept OT)
+      const isInFairnessPool = checkPersonInFairnessPool(personId, shiftCode, weekendKey);
+      
+      if (!isInFairnessPool.eligible) {
+        return {
+          state: 'not-offered',
+          label: 'R',
+          disabled: true,
+          cssClass: 'refuse-btn disabled',
+          title: isInFairnessPool.reason
+        };
+      }
+      
+      // Available for refusal
+      return {
+        state: 'actionable',
+        label: 'R',
+        disabled: false,
+        cssClass: 'refuse-btn',
+        title: `Refuse ${SHIFT_DEFINITIONS[shiftCode]?.shortDisplay} shift`
+      };
+    }
+    
+    // === REFUSAL ATOMIC OPERATIONS ===
+    
+    // Handle Refusal button click with atomic validation and concurrency protection
+    async function handleRefusal(personId, shiftCode, weekendKey, buttonElement) {
+      console.log('🔴 REFUSAL OPERATION STARTED');
+      console.log(`   Person: ${personId}, Shift: ${shiftCode}, Weekend: ${weekendKey}`);
+      
+      // Step 1: Soft-reserve during processing (prevent races)
+      const originalButton = buttonElement.cloneNode(true);
+      buttonElement.textContent = 'Pending...';
+      buttonElement.className = 'refuse-btn pending';
+      buttonElement.disabled = true;
+      
+      try {
+        // Step 2: Re-validate conditions at moment of refusal
+        const validation = validateRefusalConditions(personId, shiftCode, weekendKey);
+        if (!validation.valid) {
+          throw new Error(validation.reason);
+        }
+        
+        // Step 3: Calculate chargeable hours (from OT window, not total shift)
+        const shift = SHIFT_DEFINITIONS[shiftCode];
+        const chargeableHours = shift.chargeableHours;
+        
+        console.log(`   Chargeable hours penalty: ${chargeableHours}h (from ${shift.totalHours}h total shift)`);
+        
+        // Step 4: Execute refusal atomically
+        const success = executeRefusal(personId, shiftCode, weekendKey, chargeableHours);
+        if (!success) {
+          throw new Error('Refusal operation failed');
+        }
+        
+        // Step 5: Create audit entry
+        createAuditEntry('shift_refused', {
+          personId,
+          shiftCode,
+          weekendKey,
+          chargeableHours,
+          totalShiftHours: shift.totalHours,
+          timestamp: new Date().toISOString(),
+          actor: 'user'
+        });
+        
+        // Step 6: Live UI updates without page reload
+        updateRefusalSuccess(personId, shiftCode, weekendKey, chargeableHours);
+        
+        console.log('✅ REFUSAL OPERATION COMPLETED SUCCESSFULLY');
+        
+      } catch (error) {
+        console.error('❌ REFUSAL OPERATION FAILED:', error.message);
+        
+        // Restore original button state
+        buttonElement.textContent = originalButton.textContent;
+        buttonElement.className = originalButton.className;
+        buttonElement.disabled = originalButton.disabled;
+        
+        // Show user-friendly error message
+        showRefusalError(error.message);
+      }
+    }
+    
+    // Validate all refusal conditions atomically
+    function validateRefusalConditions(personId, shiftCode, weekendKey) {
+      // Check if person already refused this shift (idempotency)
+      if (isShiftRefused(personId, shiftCode, weekendKey)) {
+        return { valid: false, reason: 'You have already refused this shift.' };
+      }
+      
+      // Check if person is already assigned to this shift
+      if (isPersonAssignedToShift(personId, shiftCode, weekendKey)) {
+        return { valid: false, reason: 'You are already assigned to this shift.' };
+      }
+      
+      // Check if shift is full (offer expired)
+      const capacity = getShiftCapacity(shiftCode);
+      const assigned = getShiftAssignedCount(shiftCode, weekendKey);
+      if (assigned >= capacity) {
+        return { valid: false, reason: 'Offer expired - shift is now full.' };
+      }
+      
+      // Check if person is still in fairness pool
+      const isInFairnessPool = checkPersonInFairnessPool(personId, shiftCode, weekendKey);
+      if (!isInFairnessPool.eligible) {
+        return { valid: false, reason: isInFairnessPool.reason };
+      }
+      
+      return { valid: true };
+    }
+    
+    // Execute the refusal operation (adds hours but doesn't consume capacity)
+    function executeRefusal(personId, shiftCode, weekendKey, chargeableHours) {
+      try {
+        console.log('🔄 Executing refusal...');
+        
+        // Add chargeable hours to person's adjustment total (fairness penalty)
+        if (!state.adj[personId]) state.adj[personId] = 0;
+        state.adj[personId] += chargeableHours;
+        saveAdj();
+        
+        // Record the refusal (prevents re-offering)
+        if (!state.refusals[weekendKey]) state.refusals[weekendKey] = {};
+        if (!state.refusals[weekendKey][personId]) state.refusals[weekendKey][personId] = {};
+        
+        state.refusals[weekendKey][personId][shiftCode] = {
+          refused: true,
+          worked: false, // Key difference: person didn't work
+          timestamp: new Date().toISOString(),
+          chargeableHours: chargeableHours // Track what was charged
+        };
+        
+        saveRefusals();
+        
+        // CRITICAL: Also add penalty hours to shift-specific system so they appear in main table shift cells
+        // Use special refusal function that doesn't mark as "worked"
+        setRefusalPenaltyHours(personId, shiftCode, weekendKey, chargeableHours);
+        console.log(`   ✅ Also added ${chargeableHours}h penalty to shift cell for ${shiftCode} (not marked as worked)`);
+        
+        // IMPORTANT: Also record the refused shift in the shifts system with worked: false
+        // This ensures the eligibility system knows about refusals and doesn't apply break rules to them
+        const shift = SHIFT_DEFINITIONS[shiftCode];
+        if (shift) {
+          const weekend = getCurrentWeekend();
+          const shiftDates = calculateShiftDates(shift, weekend);
+          
+          // Initialize shifts data if needed
+          if (!state.shifts[weekendKey]) state.shifts[weekendKey] = {};
+          if (!state.shifts[weekendKey][personId]) {
+            state.shifts[weekendKey][personId] = { shifts: [], totalHours: 0, chargeableHours: 0 };
+          }
+          
+          // Add refused shift with worked: false
+          state.shifts[weekendKey][personId].shifts.push({
+            shiftCode,
+            startTime: shiftDates.start,
+            endTime: shiftDates.end,
+            totalHours: shift.totalHours,
+            chargeableHours: shift.chargeableHours,
+            worked: false  // Key difference: this was refused, not worked
+          });
+          
+          saveShifts();
+          console.log(`   ✅ Also recorded refused shift in shifts system with worked: false`);
+        }
+        
+        // Update last change timestamp for ranking tie-breaker
+        bumpLastChange(personId);
+        
+        // Invalidate eligibility cache
+        invalidateEligibilityCache();
+        
+        console.log(`✅ Refusal executed: +${chargeableHours}h penalty, capacity unchanged`);
+        return true;
+        
+      } catch (error) {
+        console.error('❌ Refusal execution failed:', error);
+        return false;
+      }
+    }
+    
+    // Update UI after successful refusal operation
+    function updateRefusalSuccess(personId, shiftCode, weekendKey, chargeableHours) {
+      // Invalidate eligibility cache
+      invalidateEligibilityCache();
+      
+      // Update person totals instantly
+      updatePersonTotalsInstantly(personId);
+      
+      // Re-render main table to show updated totals immediately
+      render();
+      
+      // Show success feedback
+      const person = state.items.find(p => p.id === personId);
+      const shift = SHIFT_DEFINITIONS[shiftCode];
+      const assignedCount = getShiftAssignedCount(shiftCode, weekendKey);
+      const capacity = getShiftCapacity(shiftCode);
+      
+      console.log(`🔴 ${person?.name || 'Person'} refused ${shift?.name || shiftCode} (${assignedCount}/${capacity} filled, +${chargeableHours}h penalty)`);
+    }
+    
+    // Show refusal error message
+    function showRefusalError(message) {
+      alert(message);
+    }
+    
+    // === ACCEPT OT ATOMIC OPERATIONS ===
+    
+    // Handle Accept OT button click with atomic validation and concurrency protection
+    async function handleAcceptOT(personId, shiftCode, weekendKey, buttonElement) {
+      console.log('🟢 ACCEPT OT OPERATION STARTED');
+      console.log(`   Person: ${personId}, Shift: ${shiftCode}, Weekend: ${weekendKey}`);
+      console.log(`   Current Weekend Key: ${getCurrentWeekendKey()}`);
+      console.log(`   Weekend Match: ${weekendKey === getCurrentWeekendKey()}`);
+      
+      // Step 1: Soft-reserve the slot (prevent races)
+      const originalButton = buttonElement.cloneNode(true);
+      buttonElement.textContent = 'Pending...';
+      buttonElement.className = 'accept-ot-btn pending';
+      buttonElement.disabled = true;
+      
+      try {
+        // Step 2: Re-validate all conditions at moment of acceptance
+        const validation = validateAcceptOTConditions(personId, shiftCode, weekendKey);
+        if (!validation.valid) {
+          throw new Error(validation.reason);
+        }
+        
+        // Step 3: Calculate chargeable hours (using chargeable OT window)
+        const shift = SHIFT_DEFINITIONS[shiftCode];
+        const chargeableHours = shift.chargeableHours;
+        
+        console.log(`   Chargeable hours: ${chargeableHours}h (from ${shift.totalHours}h total shift)`);
+        
+        // Step 4: Write the assignment atomically
+        const success = assignShift(personId, shiftCode, weekendKey);
+        if (!success) {
+          throw new Error('Shift assignment failed');
+        }
+        
+        // Step 5: Create audit entry
+        createAuditEntry('shift_accepted', {
+          personId,
+          shiftCode,
+          weekendKey,
+          chargeableHours,
+          totalShiftHours: shift.totalHours,
+          timestamp: new Date().toISOString(),
+          actor: 'user'
+        });
+        
+        // Step 6: Live UI updates without page reload
+        updateAcceptOTSuccess(personId, shiftCode, weekendKey, chargeableHours);
+        
+        console.log('✅ ACCEPT OT OPERATION COMPLETED SUCCESSFULLY');
+        
+      } catch (error) {
+        console.error('❌ ACCEPT OT OPERATION FAILED:', error.message);
+        
+        // Restore original button state
+        buttonElement.textContent = originalButton.textContent;
+        buttonElement.className = originalButton.className;
+        buttonElement.disabled = originalButton.disabled;
+        
+        // Show user-friendly error message
+        showAcceptOTError(error.message);
+      }
+    }
+    
+    // Validate all Accept OT conditions atomically
+    function validateAcceptOTConditions(personId, shiftCode, weekendKey) {
+      // Check if already assigned
+      if (isPersonAssignedToShift(personId, shiftCode, weekendKey)) {
+        return { valid: false, reason: 'You are already assigned to this shift.' };
+      }
+      
+      // Check capacity
+      const capacity = getShiftCapacity(shiftCode);
+      const assigned = getShiftAssignedCount(shiftCode, weekendKey);
+      if (assigned >= capacity) {
+        return { valid: false, reason: 'That shift just filled—try another.' };
+      }
+      
+      // Check eligibility (rest rules)
+      const eligibility = canWorkShift(personId, shiftCode, weekendKey);
+      if (!eligibility.eligible) {
+        return { valid: false, reason: eligibility.reason };
+      }
+      
+      // Check if person refused this shift
+      if (isShiftRefused(personId, shiftCode, weekendKey)) {
+        return { valid: false, reason: 'You have refused this shift.' };
+      }
+      
+      // Check fairness pool
+      const isInFairnessPool = checkPersonInFairnessPool(personId, shiftCode, weekendKey);
+      if (!isInFairnessPool.eligible) {
+        return { valid: false, reason: isInFairnessPool.reason };
+      }
+      
+      return { valid: true };
+    }
+    
+    // Update UI after successful Accept OT operation
+    function updateAcceptOTSuccess(personId, shiftCode, weekendKey, chargeableHours) {
+      // Invalidate eligibility cache
+      invalidateEligibilityCache();
+      
+      // Update person totals instantly
+      updatePersonTotalsInstantly(personId);
+      
+      // Re-render main table to show hours immediately
+      render();
+      
+      // Show success feedback
+      const person = state.items.find(p => p.id === personId);
+      const shift = SHIFT_DEFINITIONS[shiftCode];
+      const assignedCount = getShiftAssignedCount(shiftCode, weekendKey);
+      const capacity = getShiftCapacity(shiftCode);
+      
+      console.log(`✅ ${person?.name || 'Person'} assigned to ${shift?.name || shiftCode} (${assignedCount}/${capacity} filled, +${chargeableHours}h)`);
+    }
+    
+    // Show Accept OT error message
+    function showAcceptOTError(message) {
+      // For now, use alert - could be enhanced with a toast notification
+      alert(message);
+    }
+    
+    // Create audit entry for tracking
+    function createAuditEntry(eventType, data) {
+      try {
+        const auditKey = 'accept_ot_audit_v1';
+        const existingAudit = JSON.parse(localStorage.getItem(auditKey) || '[]');
+        
+        const entry = {
+          id: `${eventType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          eventType,
+          timestamp: new Date().toISOString(),
+          ...data
+        };
+        
+        existingAudit.push(entry);
+        
+        // Keep only last 1000 entries to prevent storage bloat
+        if (existingAudit.length > 1000) {
+          existingAudit.splice(0, existingAudit.length - 1000);
+        }
+        
+        localStorage.setItem(auditKey, JSON.stringify(existingAudit));
+        console.log('📝 Audit entry created:', entry);
+      } catch (error) {
+        console.warn('Failed to create audit entry:', error);
+      }
     }
     
     // Get all available shifts for a specific person (considering their eligibility and refusals)
@@ -1735,7 +3661,7 @@
         if (!item) return clearForm();
         el.name.value = item.name;
         el.lisNumber.value = item.lisNumber || '';
-        el.passNumber.value = item.passNumber;
+        el.initialHours.value = effectiveTotal(item.id) || '';
         el.saveBtn.textContent = 'Save';
         el.cancelEditBtn.style.display = '';
         el.name.focus();
@@ -1757,14 +3683,20 @@
       return result.replace(/<[^>]*>/g, '').replace(/[\r\n\t]/g, ' ').replace(/\s+/g, ' ').trim();
     }
 
-    function upsertItem(name, lisNumber, passNumber){
+    function upsertItem(name, lisNumber, initialHours){
       name = normalize(name);
       lisNumber = normalize(lisNumber);
-      passNumber = normalize(passNumber);
+      initialHours = parseFloat(initialHours) || 0;
       
       // Validate required fields
-      if (!name || !passNumber){
-        alert('Please enter both name and pass #.');
+      if (!name){
+        alert('Please enter a name.');
+        return;
+      }
+      
+      // Validate hours if provided
+      if (initialHours < 0) {
+        alert('Hours cannot be negative.');
         return;
       }
       
@@ -1794,12 +3726,6 @@
         }
       }
 
-      // Duplicate pass number check (warn if different record uses same pass)
-      const dup = state.items.find(x => x.passNumber.toLowerCase() === passNumber.toLowerCase() && x.id !== state.editingId);
-      if (dup){
-        const cont = confirm(`Pass # "${passNumber}" already exists for "${dup.name}". Add anyway?`);
-        if (!cont) return;
-      }
       // Optional: warn on duplicate LIS number if provided
       if (lisNumber){
         const dupLis = state.items.find(x => (x.lisNumber || '').toLowerCase() === lisNumber.toLowerCase() && x.id !== state.editingId);
@@ -1811,12 +3737,35 @@
 
       const now = new Date().toISOString();
       if (state.editingId){
+        // Editing existing item
         const idx = state.items.findIndex(x => x.id === state.editingId);
         if (idx !== -1){
-          state.items[idx] = { ...state.items[idx], name, lisNumber, passNumber, updatedAt: now };
+          state.items[idx] = { ...state.items[idx], name, lisNumber, updatedAt: now };
+          
+          // Update hours if provided during edit
+          if (initialHours > 0) {
+            const personId = state.editingId;
+            const currentTotal = effectiveTotal(personId);
+            const adjustment = initialHours - currentTotal;
+            
+            if (adjustment !== 0) {
+              if (!state.adj[personId]) state.adj[personId] = 0;
+              state.adj[personId] += adjustment;
+              saveAdj();
+            }
+          }
         }
       } else {
-        state.items.push({ id: uid(), name, lisNumber, passNumber, createdAt: now });
+        // Creating new item
+        const newId = uid();
+        state.items.push({ id: newId, name, lisNumber, createdAt: now });
+        
+        // Add initial hours if provided
+        if (initialHours > 0) {
+          if (!state.adj[newId]) state.adj[newId] = 0;
+          state.adj[newId] = initialHours;
+          saveAdj();
+        }
       }
       save();
       clearForm();
@@ -1825,7 +3774,7 @@
 
     function deleteItem(id){
       const item = state.items.find(x => x.id === id);
-      const label = item ? `${item.name} (${item.passNumber})` : '#'+id;
+      const label = item ? `${item.name}` : '#'+id;
       if (!confirm(`Delete ${label}? This cannot be undone.`)) return;
       state.items = state.items.filter(x => x.id !== id);
       save();
@@ -1873,14 +3822,14 @@
       const q = state.filter.toLowerCase();
       let rows = state.items
         .map((x, i) => ({ ...x, index: i+1 }))
-        .filter(r => !q || r.name.toLowerCase().includes(q) || (r.lisNumber || '').toLowerCase().includes(q) || r.passNumber.toLowerCase().includes(q));
+        .filter(r => !q || r.name.toLowerCase().includes(q) || (r.lisNumber || '').toLowerCase().includes(q));
 
       if (state.useRankOrder){
         rows.sort(compareByWhosNext);
       } else {
         const { key, dir } = state.sort;
         const cmp = (a,b) => {
-          if (key === 'lisNumber' || key === 'passNumber' || key === 'index'){
+          if (key === 'lisNumber' || key === 'index'){
             const na = Number(a[key]); const nb = Number(b[key]);
             const A = Number.isFinite(na) ? na : Number.POSITIVE_INFINITY;
             const B = Number.isFinite(nb) ? nb : Number.POSITIVE_INFINITY;
@@ -1897,6 +3846,7 @@
     }
 
     function render(){
+      // Debug: console.log('🔄 MAIN RENDER FUNCTION CALLED');
       // Update header (month picker + mode)
       // Mode pill is optional in current UI; update only if present
       if (el.modePill) el.modePill.textContent = IS_ADMIN ? 'Admin' : 'Read-only';
@@ -1934,7 +3884,6 @@
         // Validate data before rendering to prevent corruption
         const safeName = String(r.name || '').trim() || 'Invalid Name';
         const safeListNum = String(r.lisNumber || '').trim();
-        const safePassNum = String(r.passNumber || '').trim() || 'Invalid Pass';
         
         // Skip rows with obviously corrupted data
         if (/^\d+$/.test(safeName) || safeName.toLowerCase().includes('fri') || safeName.toLowerCase().includes('sat')) {
@@ -1942,11 +3891,10 @@
           return; // Skip this iteration entirely
         }
         
-        // Sticky left columns: list, name, pass
+        // Sticky left columns: list, name
         cells.push(`<td class="col-list num">${escapeHtml(safeListNum)}</td>`);
         // Add title tooltip so very long names are still fully readable on hover
         cells.push(`<td class="col-name name-cell" title="${escapeHtml(safeName)}">${escapeHtml(safeName)}</td>`);
-        cells.push(`<td class="col-pass num">${escapeHtml(safePassNum)}</td>`);
 
         // BaseSum: sum ALL hours for this person (cumulative across all months)
         let baseSumAll = baseSum(r.id); // This is the cumulative total
@@ -1959,7 +3907,7 @@
           const shifts = [
             'shift1_fri_sat',
             'shift2_sat_afternoon', 
-            'shift3_sat_sun',
+            'shift3_sat_night',
             'shift4_sun_morning',
             'shift5_2_to_finish'
           ];
@@ -1975,9 +3923,8 @@
           });
         });
 
-        // ManualAdj: additive hours stored per person (does not alter day cells)
-        const manualAdj = Number(state.adj[r.id] || 0);
-        const cumulativeTotal = baseSumAll + manualAdj; // Total across ALL months
+        // Total hours for display (includes all hours + adjustments + refusal penalties)
+        const cumulativeTotal = effectiveTotal(r.id);
         const totalDisplay = cumulativeTotal ? cumulativeTotal.toFixed(2).replace(/\.00$/, '') : '';
         cells.push(`<td class="right row-total-cell" data-person="${r.id}">
           <input class="row-total-input" type="number" inputmode="decimal" min="-100000" max="1000000" step="0.25" autocomplete="off" enterkeyhint="done" placeholder="0 hrs" value="${totalDisplay}" data-person="${r.id}" aria-describedby="totalHelp" title="Edit cumulative total hours (includes all months) - system will calculate adjustment" />
@@ -2168,6 +4115,27 @@
           refusalDetails.actualHours = Number(hours);
           saveRefusals();
         }
+      }
+      
+      try {
+        localStorage.setItem(shiftHoursKey, JSON.stringify(shiftHours));
+      } catch(_) {}
+    }
+    
+    // Set penalty hours for a refused shift (does NOT mark as worked)
+    function setRefusalPenaltyHours(personId, shiftCode, weekendKey, hours){
+      const shiftHoursKey = `shift-hours-v1`;
+      let shiftHours = {};
+      try {
+        shiftHours = JSON.parse(localStorage.getItem(shiftHoursKey) || '{}');
+      } catch(_) {}
+      
+      const personKey = `${personId}_${weekendKey}`;
+      if (!shiftHours[personKey]) shiftHours[personKey] = {};
+      
+      if (hours > 0) {
+        shiftHours[personKey][shiftCode] = Number(hours);
+        // Note: We deliberately do NOT mark as worked for refusal penalties
       }
       
       try {
@@ -2462,12 +4430,12 @@
       });
     }
 
-    // Check if a shift is already assigned to someone
+    // Check if a shift is already assigned to someone (only counts actually worked shifts)
     function isShiftAssigned(shiftCode, weekendKey){
       const assignments = state.shifts[weekendKey] || {};
       for (const personId in assignments) {
         const personShifts = assignments[personId].shifts || [];
-        if (personShifts.some(s => s.shiftCode === shiftCode)) {
+        if (personShifts.some(s => s.shiftCode === shiftCode && s.worked === true)) {
           return true;
         }
       }
@@ -2479,7 +4447,6 @@
       parts.push('<tr>');
       parts.push('<td class="col-list"></td>'); // List #
       parts.push('<td class="col-name muted" style="font-weight: 700;">Column Totals</td>'); // Name label
-      parts.push('<td class="col-pass"></td>'); // Pass #
       let grand = 0;
       weekends.forEach(w => {
         w.days.forEach(day => {
@@ -2522,7 +4489,7 @@
           id: p.id, 
           name: p.name || '', 
           lis: p.lisNumber || '', 
-          pass: p.passNumber || '', 
+ 
           total, 
           last, 
           excluded,
@@ -2557,10 +4524,56 @@
         
         const nextShiftDisplay = nextShift ? `${nextShift.shortDisplay} (${nextShift.chargeableHours}h)` : 'No shifts available';
         
+        // Get active shifts for the current weekend/location
+        const activeShifts = getActiveShiftsForWeekend(currentWeekendKey);
+        const shiftsHtml = activeShifts.length === 0 
+          ? '<div class="shifts-empty">No shifts configured</div>'
+          : activeShifts.map(shift => {
+              // Get Accept OT button state for this person/shift
+              const acceptState = getAcceptOTButtonState(r.id, shift.code, currentWeekendKey);
+              
+              // Show remaining slots badge
+              const remainingBadge = shift.remaining > 0 && shift.remaining < shift.capacity
+                ? `<span class="shift-badge">${shift.remaining}</span>`
+                : '';
+              
+              // Get Refusal button state for this person/shift
+              const refusalState = getRefusalButtonState(r.id, shift.code, currentWeekendKey);
+              
+              return `
+                <div class="shift-btn-group">
+                  <button 
+                    class="accept-ot-btn ${acceptState.cssClass}" 
+                    data-person-id="${r.id}" 
+                    data-shift-code="${shift.code}"
+                    data-weekend-key="${currentWeekendKey}"
+                    data-action="accept-ot"
+                    title="${acceptState.title}"
+                    aria-label="${acceptState.title}"
+                    ${acceptState.disabled ? 'disabled' : ''}
+                  >
+                    ${acceptState.state === 'assigned' ? `✓ ${shift.shortDisplay}` : `Accept ${shift.shortDisplay}`}${acceptState.state === 'available' ? remainingBadge : ''}
+                  </button>
+                  <button 
+                    class="${refusalState.cssClass}" 
+                    data-person-id="${r.id}" 
+                    data-shift-code="${shift.code}"
+                    data-weekend-key="${currentWeekendKey}"
+                    data-action="refuse"
+                    title="${refusalState.title}"
+                    aria-label="${refusalState.title}"
+                    ${refusalState.disabled ? 'disabled' : ''}
+                  >
+                    ${refusalState.state === 'refused' ? `✗ ${shift.shortDisplay}` : `Refuse ${shift.shortDisplay}`}
+                  </button>
+                </div>
+              `;
+            }).join('');
+        
         row.innerHTML = `
+          <div class="wn-rank" title="Rank">${i+1}</div>
           <div class="wn-main">
             <div class="wn-left">
-              <span class="pill wn-rank" title="Rank">${i+1}</span>
               <div class="wn-text">
                 <div class="wn-name" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</div>
                 <div class="wn-meta">${escapeHtml(r.lis)} • ${escapeHtml(r.pass)}</div>
@@ -2578,76 +4591,12 @@
               `<button class="wn-btn secondary restore-person" data-person-id="${r.id}" title="Restore to Who's Next list">
                 Restore
               </button>` :
-              // Show all available shifts for non-excluded people
-              (() => {
-                const availableShifts = getAvailableShiftsForPerson(r.id, currentWeekendKey);
-                const refusedShifts = getRefusedShiftsForPerson(r.id, currentWeekendKey);
-                let shiftButtons = '';
-                
-                // Add buttons for available shifts (max 3 to avoid UI clutter)
-                const displayShifts = availableShifts.slice(0, 3);
-                displayShifts.forEach(shift => {
-                  if (shift.canAssign) {
-                    const capacityInfo = `${shift.assignedCount || 0}/${shift.capacity || 0} filled`;
-                    shiftButtons += `<button class="wn-btn primary assign-shift" data-person-id="${r.id}" data-shift="${shift.code}" data-weekend="${currentWeekendKey}" title="Assign ${shift.name} (${capacityInfo})">
-                      Assign ${shift.shortDisplay}
-                    </button>`;
-                    shiftButtons += `<button class="wn-btn secondary refuse-shift" data-person-id="${r.id}" data-shift="${shift.code}" data-weekend="${currentWeekendKey}" title="Refuse ${shift.name} (${capacityInfo})">
-                      Refuse
-                    </button>`;
-                  } else if (shift.eligible) {
-                    shiftButtons += `<span class="wn-unavailable" title="${shift.ineligibleReason}">${shift.shortDisplay}: N/A</span>`;
-                  }
-                });
-                
-                // Add buttons for refused shifts that can be un-refused
-                refusedShifts.slice(0, 2).forEach(shift => {
-                  const capacityInfo = `${shift.assignedCount || 0}/${shift.capacity || 0} filled`;
-                  shiftButtons += `<button class="wn-btn danger assign-shift" data-person-id="${r.id}" data-shift="${shift.code}" data-weekend="${currentWeekendKey}" title="Un-refuse and assign ${shift.name} (${capacityInfo})">
-                    Assign ${shift.shortDisplay}
-                  </button>`;
-                  shiftButtons += `<button class="wn-btn ghost unrefuse-shift" data-person-id="${r.id}" data-shift="${shift.code}" data-weekend="${currentWeekendKey}" title="Un-refuse ${shift.name} (${capacityInfo})">
-                    Un-refuse
-                  </button>`;
-                });
-                
-                // Add reset buttons for assigned shifts or refused shifts
-                const personShifts = getPersonShifts(r.id, currentWeekendKey);
-                const assignedShifts = personShifts ? personShifts.shifts : [];
-                const allRefusedShifts = getRefusedShiftsForPerson(r.id, currentWeekendKey);
-                
-                // Reset buttons for assigned shifts
-                assignedShifts.forEach(assignedShift => {
-                  const shiftDef = SHIFT_DEFINITIONS[assignedShift.shiftCode];
-                  if (shiftDef) {
-                    shiftButtons += `<button class="wn-btn reset-shift" data-person-id="${r.id}" data-shift="${assignedShift.shiftCode}" data-weekend="${currentWeekendKey}" title="Reset assignment for ${shiftDef.name}">
-                      Reset ${shiftDef.shortDisplay}
-                    </button>`;
-                  }
-                });
-                
-                // Reset buttons for refused shifts (avoid duplicates with assigned shifts)
-                allRefusedShifts.forEach(refusedShift => {
-                  // Only show reset button if this shift isn't already assigned (to avoid duplicate buttons)
-                  const isAlsoAssigned = assignedShifts.some(as => as.shiftCode === refusedShift.code);
-                  if (!isAlsoAssigned) {
-                    const shiftDef = SHIFT_DEFINITIONS[refusedShift.code];
-                    if (shiftDef) {
-                      const statusText = refusedShift.worked ? ' (worked)' : ' (refused)';
-                      shiftButtons += `<button class="wn-btn reset-shift" data-person-id="${r.id}" data-shift="${refusedShift.code}" data-weekend="${currentWeekendKey}" title="Reset refusal for ${shiftDef.name}${statusText}">
-                        Reset ${shiftDef.shortDisplay}
-                      </button>`;
-                    }
-                  }
-                });
-                
-                return shiftButtons || '<span class="not-available">No shifts available</span>';
-              })()
+              // Show Not Here button only
+                `<button class="wn-btn not-here" data-person-id="${r.id}" data-action="nothere" title="Mark as not available for this weekend">Not Here</button>`
             }
-            ${r.excluded ? '' : 
-              `<button class="wn-btn done" data-person-id="${r.id}" data-action="done" title="Mark as done for this weekend">Done</button>
-              <button class="wn-btn not-here" data-person-id="${r.id}" data-action="nothere" title="Mark as not available for this weekend">Not Here</button>`
-            }
+          </div>
+          <div class="wn-shifts">
+            ${shiftsHtml}
           </div>
         `;
         
@@ -2680,10 +4629,11 @@
     }
 
     function exportCsv(){
-      const header = ['List #','Name','Pass #'];
+      const header = ['List #','Name','Hours'];
       const lines = [header.join(',')];
       state.items.forEach(x => {
-        const row = [csvCell(x.lisNumber || ''), csvCell(x.name), csvCell(x.passNumber)].join(',');
+        const hours = effectiveTotal(x.id) || 0;
+        const row = [csvCell(x.lisNumber || ''), csvCell(x.name), csvCell(hours.toString())].join(',');
         lines.push(row);
       });
       const blob = new Blob(["\uFEFF" + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -2717,31 +4667,50 @@
       try {
         if (file.type.includes('json') || text.trim().startsWith('[')){
           const arr = JSON.parse(text);
-          if (Array.isArray(arr)) imported = arr.map(x => ({ id: x.id || uid(), name: normalize(x.name), lisNumber: normalize(x.lisNumber), passNumber: normalize(x.passNumber), createdAt: x.createdAt || new Date().toISOString() }));
+          if (Array.isArray(arr)) imported = arr.map(x => ({ id: x.id || uid(), name: normalize(x.name), lisNumber: normalize(x.lisNumber), initialHours: parseFloat(x.hours) || 0, createdAt: x.createdAt || new Date().toISOString() }));
         } else {
           imported = parseCsv(text);
         }
       } catch(e){ alert('Could not parse file. Make sure it is valid CSV or JSON.'); return; }
 
       if (!imported.length){ alert('No entries found in file.'); return; }
-      const merged = mergeByIdOrPass(state.items, imported);
+      const merged = mergeByIdOrLis(state.items, imported);
       const addCount = merged.length - state.items.length;
       state.items = merged;
       save();
+      saveAdj(); // Save hour adjustments from import
       render();
       alert(`Imported ${imported.length} rows (${addCount} new, ${imported.length - addCount} updated/merged).`);
     }
 
-    function mergeByIdOrPass(existing, incoming){
+    function mergeByIdOrLis(existing, incoming){
       const byId = new Map(existing.map(x => [x.id, x]));
-      const byPass = new Map(existing.map(x => [x.passNumber.toLowerCase(), x]));
       const byLis = new Map(existing.map(x => [((x.lisNumber || '').toLowerCase()), x]));
       incoming.forEach(n => {
-        const keyPass = n.passNumber?.toLowerCase();
         const keyLis = (n.lisNumber || '').toLowerCase();
-        const match = (n.id && byId.get(n.id)) || (keyPass && byPass.get(keyPass)) || (keyLis && byLis.get(keyLis));
-        if (match){ Object.assign(match, { name: n.name || match.name, lisNumber: n.lisNumber ?? match.lisNumber, passNumber: n.passNumber || match.passNumber, updatedAt: new Date().toISOString() }); }
-        else { existing.push({ id: n.id || uid(), name: n.name || '', lisNumber: n.lisNumber || '', passNumber: n.passNumber || '', createdAt: new Date().toISOString() }); }
+        const match = (n.id && byId.get(n.id)) || (keyLis && byLis.get(keyLis));
+        if (match){ 
+          // Update existing item
+          Object.assign(match, { name: n.name || match.name, lisNumber: n.lisNumber ?? match.lisNumber, updatedAt: new Date().toISOString() });
+          // Update hours if provided
+          if (n.initialHours > 0) {
+            const currentTotal = effectiveTotal(match.id);
+            const adjustment = n.initialHours - currentTotal;
+            if (adjustment !== 0) {
+              if (!state.adj[match.id]) state.adj[match.id] = 0;
+              state.adj[match.id] += adjustment;
+            }
+          }
+        } else { 
+          // Create new item
+          const newId = n.id || uid();
+          existing.push({ id: newId, name: n.name || '', lisNumber: n.lisNumber || '', createdAt: new Date().toISOString() });
+          // Add initial hours if provided
+          if (n.initialHours > 0) {
+            if (!state.adj[newId]) state.adj[newId] = 0;
+            state.adj[newId] = n.initialHours;
+          }
+        }
       });
       return existing;
     }
@@ -2753,30 +4722,31 @@
       // Detect header and column order
       const first = lines[0];
       const firstLower = first.toLowerCase();
-      const hasHeader = firstLower.includes('name') && (firstLower.includes('pass') || firstLower.includes('number'));
+      const hasHeader = firstLower.includes('name') && (firstLower.includes('lis') || firstLower.includes('list') || firstLower.includes('hour'));
       const headerCells = hasHeader ? smartSplitCsv(firstLower) : [];
       const colIndex = {
         name: hasHeader ? headerCells.findIndex(c => c.includes('name')) : 0,
         lis: hasHeader ? headerCells.findIndex(c => (c.includes('lis') || c.includes('list'))) : 1,
-        pass: hasHeader ? headerCells.findIndex(c => c.includes('pass')) : (hasHeader ? -1 : 1),
+        hours: hasHeader ? headerCells.findIndex(c => c.includes('hour')) : 2,
       };
       const start = hasHeader ? 1 : 0;
       const rows = [];
       for (let i = start; i < lines.length; i++){
         const cells = smartSplitCsv(lines[i]);
         if (!cells.length) continue;
-        let name, lisNumber, passNumber;
+        let name, lisNumber, initialHours;
         if (hasHeader){
           name = cells[colIndex.name] ?? '';
           lisNumber = colIndex.lis >= 0 ? (cells[colIndex.lis] ?? '') : '';
-          passNumber = colIndex.pass >= 0 ? (cells[colIndex.pass] ?? '') : (cells[2] ?? cells[1] ?? '');
+          initialHours = colIndex.hours >= 0 ? parseFloat(cells[colIndex.hours]) || 0 : 0;
         } else {
-          // Without header: support [Name, Pass] or [Name, LIS, Pass]
-          if (cells.length >= 3){ [name, lisNumber, passNumber] = cells; }
-          else { [name, passNumber] = cells; lisNumber = ''; }
+          // Without header: support [Name, LIS, Hours] or [Name, LIS] or just [Name]
+          if (cells.length >= 3){ [name, lisNumber, initialHours] = [cells[0], cells[1], parseFloat(cells[2]) || 0]; }
+          else if (cells.length >= 2){ [name, lisNumber] = cells; initialHours = 0; }
+          else { name = cells[0] || ''; lisNumber = ''; initialHours = 0; }
         }
-        if (!name && !passNumber && !lisNumber) continue;
-        rows.push({ id: uid(), name: normalize(name), lisNumber: normalize(lisNumber), passNumber: normalize(passNumber), createdAt: new Date().toISOString() });
+        if (!name && !lisNumber) continue;
+        rows.push({ id: uid(), name: normalize(name), lisNumber: normalize(lisNumber), initialHours, createdAt: new Date().toISOString() });
       }
       return rows;
     }
@@ -2906,18 +4876,12 @@
       return Math.max(min, Math.min(max, Number(n) || 0));
     }
     function updateTotalsFor(personId){
-      // Calculate total including shift hours
-      const base = baseSum(personId); // Historical hours from old hour-based system
-      const shiftTotal = calculatePersonShiftTotal(personId); // New shift-based hours
-      const adj = Number(state.adj[personId] || 0);
-      const newTotal = base + shiftTotal + adj;
+      // Calculate total including shift hours and all adjustments (including refusal penalties)
+      const newTotal = effectiveTotal(personId);
       
       const cell = document.querySelector(`input.row-total-input[data-person="${personId}"]`);
       
       console.log(`Updating totals for person ${personId}:`);
-      console.log(`- Base sum (legacy hours): ${base}`);
-      console.log(`- Shift total: ${shiftTotal}`);
-      console.log(`- Adjustment: ${adj}`);
       console.log(`- New total: ${newTotal}`);
       console.log(`- Cell found:`, cell ? 'YES' : 'NO');
       
@@ -3014,8 +4978,6 @@
       const last = ['Rivera','Lopez','Nguyen','Patel','Kim','Singh','Chen','Hernandez','Garcia','Martinez','Brown','Wilson','Clark','Lewis','Young','Diaz','Allen','King','Wright','Scott','Green','Baker','Hill','Adams','Nelson'];
       const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
       const nameSet = new Set(state.items.map(x => x.name.toLowerCase()));
-      const passSet = new Set(state.items.map(x => (x.passNumber||'').toLowerCase()));
-      const makePass = () => String(Math.floor(100000 + Math.random()*900000));
       const mkList = () => String(Math.floor(100 + Math.random()*900));
 
       // Strategic hour targets to create good distribution for testing
@@ -3050,14 +5012,10 @@
         let nm = `${pick(first)} ${pick(last)}`;
         let tries=0; while (nameSet.has(nm.toLowerCase()) && tries++ < 50){ nm = `${pick(first)} ${pick(last)}`; }
         nameSet.add(nm.toLowerCase());
-        let pass = makePass();
-        tries=0; while (passSet.has(pass.toLowerCase()) && tries++ < 50){ pass = makePass(); }
-        passSet.add(pass.toLowerCase());
         people.push({ 
           id: uid(), 
           name: nm, 
           lisNumber: mkList(), 
-          passNumber: pass, 
           createdAt: new Date().toISOString(),
           _hourTarget: hourTargets[i], // For reference
           _pattern: hourPatterns[i]    // For reference
@@ -3170,12 +5128,14 @@
     }
 
     // === Weekend Detection Utilities ===
-    // Get the current weekend (Friday-Monday) containing today's date
+    // Get the current weekend (Friday-Monday) for canvas operations
+    // Special logic: Wednesday canvasses for the UPCOMING weekend (Fri-Mon)
     function getCurrentWeekend(){
       const today = new Date();
       const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
       
       // Find the Friday that starts the current weekend
+      // Updated logic: After Monday, we start working for the NEXT weekend
       let friday;
       if (dayOfWeek === 0) { // Sunday
         friday = new Date(today);
@@ -3183,9 +5143,17 @@
       } else if (dayOfWeek === 1) { // Monday
         friday = new Date(today);
         friday.setDate(friday.getDate() - 3); // Go back to Friday
-      } else if (dayOfWeek >= 2 && dayOfWeek <= 5) { // Tue-Fri
+      } else if (dayOfWeek === 2) { // Tuesday - Working for UPCOMING weekend
         friday = new Date(today);
-        friday.setDate(friday.getDate() + (5 - dayOfWeek)); // Go forward to Friday
+        friday.setDate(friday.getDate() + 3); // Go forward to upcoming Friday
+      } else if (dayOfWeek === 3) { // Wednesday - Working for UPCOMING weekend
+        friday = new Date(today);
+        friday.setDate(friday.getDate() + 2); // Go forward to upcoming Friday
+      } else if (dayOfWeek === 4) { // Thursday - Working for UPCOMING weekend
+        friday = new Date(today);
+        friday.setDate(friday.getDate() + 1); // Go forward to upcoming Friday
+      } else if (dayOfWeek === 5) { // Friday
+        friday = new Date(today); // Today is Friday
       } else { // Saturday (dayOfWeek === 6)
         friday = new Date(today);
         friday.setDate(friday.getDate() - 1); // Go back to Friday
@@ -3206,6 +5174,24 @@
     function getCurrentWeekendKey(){
       const weekend = getCurrentWeekend();
       return getWeekendKey(weekend.friday);
+    }
+
+    // Get the previous weekend (for reference)
+    function getPreviousWeekend(){
+      const current = getCurrentWeekend();
+      const previousFriday = new Date(current.friday);
+      previousFriday.setDate(previousFriday.getDate() - 7);
+      
+      const previousMonday = new Date(previousFriday);
+      previousMonday.setDate(previousMonday.getDate() + 3);
+      
+      return { friday: previousFriday, monday: previousMonday };
+    }
+
+    // Get the previous weekend key
+    function getPreviousWeekendKey(){
+      const previousWeekend = getPreviousWeekend();
+      return getWeekendKey(previousWeekend.friday);
     }
 
     // Get the weekend for the month currently being viewed in the table
@@ -3276,7 +5262,7 @@
     function dayShort(d){ return `${d.getDate()}`; }
 
     // Event wiring
-    el.form.addEventListener('submit', (e) => { e.preventDefault(); upsertItem(el.name.value, el.lisNumber.value, el.passNumber.value); });
+    el.form.addEventListener('submit', (e) => { e.preventDefault(); upsertItem(el.name.value, el.lisNumber.value, el.initialHours.value); });
     el.cancelEditBtn.addEventListener('click', () => clearForm());
     el.search.addEventListener('input', () => { state.filter = el.search.value; render(); });
     el.clearAll.addEventListener('click', clearAll);
@@ -3596,6 +5582,7 @@
     // Who's Next search
     el.wnSearch.addEventListener('input', () => { state.wnQuery = el.wnSearch.value.toLowerCase(); renderWhosNext(); });
     
+    
     // Location configuration
     if (el.updateLocationBtn) {
       el.updateLocationBtn.addEventListener('click', () => {
@@ -3627,7 +5614,7 @@
       }
     }
 
-    // Who's Next button clicks (Assign/Done/Not Here)
+    // Who's Next button clicks (Assign/Done/Not Here) and shift chip clicks
     el.wnList.addEventListener('click', (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
@@ -3636,7 +5623,39 @@
       
       const personId = btn.getAttribute('data-person-id');
       
-      // Handle shift assignment
+      // Handle Accept OT button click
+      if (btn.getAttribute('data-action') === 'accept-ot') {
+        const shiftCode = btn.getAttribute('data-shift-code');
+        const weekendKey = btn.getAttribute('data-weekend-key');
+        
+        if (personId && shiftCode && weekendKey && !btn.disabled) {
+          // Use bottom sheet confirmation on mobile, direct handler on desktop
+          if (window.innerWidth <= 768) {
+            handleAcceptOTWithConfirmation(personId, shiftCode, weekendKey, btn);
+          } else {
+            handleAcceptOT(personId, shiftCode, weekendKey, btn);
+          }
+        }
+        return;
+      }
+      
+      // Handle Refusal button click
+      if (btn.getAttribute('data-action') === 'refuse') {
+        const shiftCode = btn.getAttribute('data-shift-code');
+        const weekendKey = btn.getAttribute('data-weekend-key');
+        
+        if (personId && shiftCode && weekendKey && !btn.disabled) {
+          // Use bottom sheet confirmation on mobile, direct handler on desktop
+          if (window.innerWidth <= 768) {
+            handleRefuseWithConfirmation(personId, shiftCode, weekendKey, btn);
+          } else {
+            handleRefusal(personId, shiftCode, weekendKey, btn);
+          }
+        }
+        return;
+      }
+      
+      // Handle shift assignment (legacy - will be deprecated)
       if (btn.classList.contains('assign-shift')) {
         const shiftCode = btn.getAttribute('data-shift');
         const weekendKey = btn.getAttribute('data-weekend');
@@ -3756,17 +5775,15 @@
         return;
       }
       
-      // Handle Done/Not Here
+      // Handle Not Here
       const action = btn.getAttribute('data-action');
-      if (personId && (action === 'done' || action === 'nothere')) {
+      if (personId && action === 'nothere') {
         excludePerson(personId, action);
         
         // Show feedback message
         const person = state.items.find(p => p.id === personId);
         const name = person ? person.name : 'Person';
-        const message = action === 'done' 
-          ? `${name} marked as Done for this weekend` 
-          : `${name} marked as Not Here for this weekend`;
+        const message = `${name} marked as Not Here for this weekend`;
         
         // Simple feedback - could be enhanced with a toast notification
         console.log(message);
@@ -3787,7 +5804,6 @@
       // Sticky first three columns for better readability when scrolling
       row1.push('<th class="sortable col-list" scope="col" data-key="lisNumber" rowspan="2" title="List number for sorting">List # <span class="dir"></span></th>');
       row1.push('<th class="sortable col-name" scope="col" data-key="name" rowspan="2">Name <span class="dir"></span></th>');
-      row1.push('<th class="sortable col-pass" scope="col" data-key="passNumber" rowspan="2" title="Pass identification number">Pass # <span class="dir"></span></th>');
       weekends.forEach(w => {
         row1.push(`<th class="th-group" scope="colgroup" colspan="5" title="${w.label}">${escapeHtml(w.label)}</th>`);
       });
@@ -3803,7 +5819,7 @@
         const shifts = [
           { key: 'shift1_fri_sat', name: 'Shift 1', time: 'Fri 10p-Sat 2p', title: 'Shift 1: Friday 10pm - Saturday 2pm (16h total, 8h chargeable)' },
           { key: 'shift2_sat_afternoon', name: 'Shift 2', time: 'Sat 2p-10p', title: 'Shift 2: Saturday 2pm - 10pm (8h overtime)' },
-          { key: 'shift3_sat_sun', name: 'Shift 3', time: 'Sat 10p-Sun 6a', title: 'Shift 3: Saturday 10pm - Sunday 6am (8h overtime)' },
+          { key: 'shift3_sat_night', name: 'Shift 3', time: 'Sat 10p-Sun 6a', title: 'Shift 3: Saturday 10pm - Sunday 6am (8h overtime)' },
           { key: 'shift4_sun_morning', name: 'Shift 4', time: 'Sun 6a-2p', title: 'Shift 4: Sunday 6am - 2pm (8h overtime)' },
           { key: 'shift5_2_to_finish', name: 'Shift 5', time: 'Sun 2p-Mon 6a', title: 'Shift 5: Sunday 2pm - Monday 6am (16h overtime, "2 to finish")' }
         ];
@@ -3823,7 +5839,7 @@
             case 'shift2_sat_afternoon':
               dateDisplay = `${sat.toLocaleString(undefined,{month:'short'})} ${sat.getDate()}`;
               break;
-            case 'shift3_sat_sun':
+            case 'shift3_sat_night':
               dateDisplay = `${sat.toLocaleString(undefined,{month:'short'})} ${sat.getDate()}-${sun.getDate()}`;
               break;
             case 'shift4_sun_morning':
@@ -3891,7 +5907,413 @@
     // Initialize location display
     initializeLocationDisplay();
     
+    // === INSTANT UI UPDATE SYSTEM ===
+    // Set up state listeners for instant UI updates without page refresh
+    
+    function setupInstantUpdates() {
+      console.log('🚀 Setting up instant UI update system');
+      
+      // Subscribe to state changes
+      subscribeToStateChanges((changeType, data) => {
+        console.log(`🔄 Processing state change: ${changeType}`, data);
+        
+        switch (changeType) {
+          case 'HOURS_UPDATED':
+            handleHoursUpdate(data);
+            break;
+          case 'SHIFT_ASSIGNED':
+            handleShiftAssignment(data);
+            break;
+          case 'SHIFT_REFUSED':
+            handleShiftRefusal(data);
+            break;
+          case 'PERSON_EXCLUDED':
+            handlePersonExclusion(data);
+            break;
+          case 'CAPACITY_CHANGED':
+            handleCapacityChange(data);
+            break;
+          default:
+            // For any other changes, do a selective update
+            performSelectiveUpdate();
+        }
+      });
+    }
+    
+    // Handle hours update without full page refresh
+    function handleHoursUpdate(data) {
+      console.log('⚡ Instant hours update:', data);
+      
+      // Update the specific cell in the main table
+      const cell = document.querySelector(`[data-person="${data.personId}"][data-shift="${data.shiftId}"]`);
+      if (cell) {
+        const input = cell.querySelector('input');
+        if (input) {
+          const currentValue = parseFloat(input.value) || 0;
+          const newValue = currentValue + data.hours;
+          input.value = displayHours(newValue);
+        }
+      }
+      
+      // Update totals
+      updatePersonTotalsInstantly(data.personId);
+      
+      // Re-rank Who's Next panel
+      renderWhosNext();
+    }
+    
+    // Handle shift assignment without full page refresh
+    function handleShiftAssignment(data) {
+      console.log('⚡ Instant shift assignment:', data);
+      
+      // Update shift capacity displays
+      updateShiftCapacityDisplays();
+      
+      // Re-render Who's Next with new eligibility
+      renderWhosNext();
+      
+      // Update weekend summary
+      if (data.weekendKey) {
+        renderWeekendSummary(data.weekendKey);
+      }
+    }
+    
+    // Handle shift refusal without full page refresh
+    function handleShiftRefusal(data) {
+      console.log('⚡ Instant shift refusal:', data);
+      
+      // Re-render Who's Next with updated options
+      renderWhosNext();
+      
+      // Update weekend summary
+      if (data.weekendKey) {
+        renderWeekendSummary(data.weekendKey);
+      }
+    }
+    
+    // Handle person exclusion without full page refresh  
+    function handlePersonExclusion(data) {
+      console.log('⚡ Instant person exclusion:', data);
+      
+      // Re-render Who's Next to reflect exclusion
+      renderWhosNext();
+    }
+    
+    // Handle capacity changes without full page refresh
+    function handleCapacityChange(data) {
+      console.log('⚡ Instant capacity change:', data);
+      
+      // Update capacity displays
+      updateShiftCapacityDisplays();
+      
+      // Re-render Who's Next with new availability
+      renderWhosNext();
+      
+      // Update weekend summary  
+      if (data.weekendKey) {
+        renderWeekendSummary(data.weekendKey);
+      }
+    }
+    
+    // Update person totals instantly
+    function updatePersonTotalsInstantly(personId) {
+      const newTotal = effectiveTotal(personId); // Includes all hours + adjustments + refusal penalties
+      
+      // Update the row total input if visible
+      const rowTotalInput = document.querySelector(`.row-total-input[data-person="${personId}"]`);
+      if (rowTotalInput) {
+        const displayValue = newTotal > 0 ? displayHours(newTotal) : '';
+        if (rowTotalInput.value !== displayValue) {
+          rowTotalInput.value = displayValue;
+        }
+      }
+    }
+    
+    // Update shift capacity displays instantly
+    function updateShiftCapacityDisplays() {
+      // Update capacity indicators in table headers
+      const capacityElements = document.querySelectorAll('.capacity-indicator');
+      capacityElements.forEach(element => {
+        const shiftHeader = element.closest('[data-shift]');
+        if (shiftHeader) {
+          const shiftId = shiftHeader.getAttribute('data-shift');
+          if (shiftId) {
+            const assigned = getShiftAssignedCount(shiftId);
+            const capacity = getShiftCapacity(shiftId);
+            element.textContent = `${assigned}/${capacity}`;
+            
+            // Update capacity class on header
+            shiftHeader.classList.remove('full', 'partial');
+            if (assigned >= capacity) {
+              shiftHeader.classList.add('full');
+            } else if (assigned > 0) {
+              shiftHeader.classList.add('partial');
+            }
+          }
+        }
+      });
+    }
+    
+    // Perform selective update for unknown changes
+    function performSelectiveUpdate() {
+      console.log('⚡ Performing selective update');
+      
+      // Only update dynamic parts, not the entire table structure
+      renderWhosNext();
+      
+      const currentWeekendKey = getCurrentWeekendKey();
+      renderWeekendSummary(currentWeekendKey);
+      
+      // Update capacity displays
+      updateShiftCapacityDisplays();
+      
+      // Invalidate eligibility cache for next render
+      invalidateEligibilityCache();
+    }
+    
+    // Set up instant updates
+    setupInstantUpdates();
+    
     render();
+    
+    // Test function for weekend status (accessible from browser console)
+    window.testWeekendStatus = function() {
+      const today = new Date();
+      const currentWeekend = getCurrentWeekend();
+      const previousWeekend = getPreviousWeekend();
+      
+      console.log('🗓️  Today:', today.toLocaleDateString(), `(${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][today.getDay()]})`);
+      console.log('📅 Current Weekend Key:', getCurrentWeekendKey());
+      console.log('📅 Current Weekend:', {
+        friday: currentWeekend.friday.toLocaleDateString(),
+        monday: currentWeekend.monday.toLocaleDateString()
+      });
+      console.log('📅 Previous Weekend Key:', getPreviousWeekendKey());
+      console.log('📅 Previous Weekend:', {
+        friday: previousWeekend.friday.toLocaleDateString(),
+        monday: previousWeekend.monday.toLocaleDateString()
+      });
+      console.log('📊 State.shifts keys:', Object.keys(state.shifts));
+      console.log('🔄 Weekend Summary re-rendering...');
+      renderWeekendSummary();
+      console.log('✅ Weekend summary rendered');
+    };
+
+    // === MOBILE BOTTOM SHEET FUNCTIONALITY ===
+    
+    let currentBottomSheetAction = null;
+    let currentBottomSheetData = null;
+
+    function showBottomSheet(title, content, confirmText, confirmAction, data) {
+      if (!window.innerWidth || window.innerWidth > 768) {
+        // On desktop, just execute the action directly with a simple confirm
+        if (confirm(title + '\n\n' + content)) {
+          confirmAction(data);
+        }
+        return;
+      }
+
+      const backdrop = document.getElementById('bottomSheetBackdrop');
+      const sheet = document.getElementById('bottomSheet');
+      const titleEl = document.getElementById('bottomSheetTitle');
+      const bodyEl = document.getElementById('bottomSheetBody');
+      const confirmBtn = document.getElementById('bottomSheetConfirm');
+      
+      if (!backdrop || !sheet) return;
+
+      titleEl.textContent = title;
+      bodyEl.innerHTML = content;
+      confirmBtn.textContent = confirmText;
+      
+      currentBottomSheetAction = confirmAction;
+      currentBottomSheetData = data;
+      
+      // Show with animation
+      backdrop.style.display = 'block';
+      requestAnimationFrame(() => {
+        backdrop.classList.add('show');
+        sheet.classList.add('show');
+      });
+      
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+    }
+
+    function hideBottomSheet() {
+      const backdrop = document.getElementById('bottomSheetBackdrop');
+      const sheet = document.getElementById('bottomSheet');
+      
+      if (!backdrop || !sheet) return;
+      
+      backdrop.classList.remove('show');
+      sheet.classList.remove('show');
+      
+      setTimeout(() => {
+        backdrop.style.display = 'none';
+        currentBottomSheetAction = null;
+        currentBottomSheetData = null;
+        // Restore body scroll
+        document.body.style.overflow = '';
+      }, 300);
+    }
+
+    function confirmBottomSheetAction() {
+      if (currentBottomSheetAction && currentBottomSheetData) {
+        currentBottomSheetAction(currentBottomSheetData);
+      }
+      hideBottomSheet();
+    }
+
+    // Set up bottom sheet event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      const cancelBtn = document.getElementById('bottomSheetCancel');
+      const confirmBtn = document.getElementById('bottomSheetConfirm');
+      const closeBtn = document.getElementById('bottomSheetClose');
+      const backdrop = document.getElementById('bottomSheetBackdrop');
+      
+      if (cancelBtn) cancelBtn.addEventListener('click', hideBottomSheet);
+      if (confirmBtn) confirmBtn.addEventListener('click', confirmBottomSheetAction);
+      if (closeBtn) closeBtn.addEventListener('click', hideBottomSheet);
+      
+      // Close on backdrop click
+      if (backdrop) {
+        backdrop.addEventListener('click', (e) => {
+          if (e.target === backdrop) {
+            hideBottomSheet();
+          }
+        });
+      }
+      
+      // Close on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          hideBottomSheet();
+        }
+      });
+    });
+
+    // === MOBILE TOAST FUNCTIONALITY ===
+    
+    function showToast(message, type = 'success', duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      
+      container.appendChild(toast);
+      
+      // Show toast
+      requestAnimationFrame(() => {
+        toast.classList.add('show');
+      });
+      
+      // Auto-hide toast
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          if (container.contains(toast)) {
+            container.removeChild(toast);
+          }
+        }, 300);
+      }, duration);
+    }
+
+    // === ENHANCED ACCEPT/REFUSE HANDLERS FOR MOBILE ===
+    
+    // Enhanced Accept OT handler with bottom sheet confirmation
+    async function handleAcceptOTWithConfirmation(personId, shiftCode, weekendKey, buttonElement) {
+      const person = state.items.find(p => p.id === personId);
+      const shift = SHIFT_DEFINITIONS[shiftCode];
+      
+      if (!person || !shift) return;
+      
+      const title = `Accept Overtime Shift`;
+      const content = `
+        <div style="text-align: center; margin: 16px 0;">
+          <strong>${person.name}</strong>
+          <div style="margin: 8px 0; color: var(--muted);">${person.lisNumber} • ${person.passNumber}</div>
+        </div>
+        <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin: 16px 0;">
+          <div><strong>Shift:</strong> ${shift.name}</div>
+          <div><strong>Hours:</strong> ${shift.chargeableHours}h</div>
+          <div><strong>Weekend:</strong> ${new Date(weekendKey).toLocaleDateString()}</div>
+        </div>
+        <div style="color: var(--muted); font-size: 13px; text-align: center;">
+          This will assign you to work this shift and add ${shift.chargeableHours} chargeable hours.
+        </div>
+      `;
+      
+      showBottomSheet(
+        title, 
+        content, 
+        'Accept Shift',
+        (data) => {
+          handleAcceptOT(data.personId, data.shiftCode, data.weekendKey, data.buttonElement);
+          showToast(`Accepted ${shift.shortDisplay} shift!`, 'success');
+        },
+        { personId, shiftCode, weekendKey, buttonElement }
+      );
+    }
+
+    // Enhanced Refuse handler with bottom sheet confirmation
+    async function handleRefuseWithConfirmation(personId, shiftCode, weekendKey, buttonElement) {
+      const person = state.items.find(p => p.id === personId);
+      const shift = SHIFT_DEFINITIONS[shiftCode];
+      
+      if (!person || !shift) return;
+      
+      const title = `Refuse Overtime Shift`;
+      const content = `
+        <div style="text-align: center; margin: 16px 0;">
+          <strong>${person.name}</strong>
+          <div style="margin: 8px 0; color: var(--muted);">${person.lisNumber} • ${person.passNumber}</div>
+        </div>
+        <div style="background: var(--bg); padding: 16px; border-radius: 8px; margin: 16px 0;">
+          <div><strong>Shift:</strong> ${shift.name}</div>
+          <div><strong>Hours:</strong> ${shift.chargeableHours}h</div>
+          <div><strong>Weekend:</strong> ${new Date(weekendKey).toLocaleDateString()}</div>
+        </div>
+        <div style="color: var(--danger); font-size: 13px; text-align: center;">
+          <strong>Warning:</strong> Refusing adds ${shift.chargeableHours} penalty hours to your total.
+        </div>
+      `;
+      
+      showBottomSheet(
+        title, 
+        content, 
+        'Refuse Shift',
+        (data) => {
+          handleRefuseOT(data.personId, data.shiftCode, data.weekendKey, data.buttonElement);
+          showToast(`Refused ${shift.shortDisplay} shift`, 'error');
+        },
+        { personId, shiftCode, weekendKey, buttonElement }
+      );
+    }
+    
   </script>
+
+  <!-- Bottom Sheet Modal for Mobile Confirmations -->
+  <div id="bottomSheetBackdrop" class="bottom-sheet-backdrop">
+    <div id="bottomSheet" class="bottom-sheet">
+      <div class="bottom-sheet-header">
+        <div class="bottom-sheet-handle"></div>
+        <h3 id="bottomSheetTitle" class="bottom-sheet-title">Confirm Action</h3>
+        <button id="bottomSheetClose" class="bottom-sheet-close" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div id="bottomSheetBody" class="bottom-sheet-body">
+        <!-- Content will be dynamically inserted here -->
+      </div>
+      <div id="bottomSheetActions" class="bottom-sheet-actions">
+        <button id="bottomSheetCancel" class="secondary" type="button">Cancel</button>
+        <button id="bottomSheetConfirm" class="primary" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container for Mobile Notifications -->
+  <div id="toastContainer" class="toast-container"></div>
+
 </body>
 </html>
