@@ -3007,18 +3007,31 @@
       // Get all non-excluded people with their current totals
       const allPeople = state.items
         .filter(person => !isPersonExcluded(person.id, weekendKey))
-        .map(person => ({
-          id: person.id,
-          name: person.name,
-          total: effectiveTotal(person.id),
-          listNumber: parseInt(person.lisNumber) || 99999, // Parse list number, default to high number if invalid
-          lastChange: getLastChange(person.id)
-        }))
+        .map(person => {
+          const listInfo = parseListNumber(person.lisNumber);
+          return {
+            id: person.id,
+            name: person.name,
+            total: effectiveTotal(person.id),
+            listNumber: listInfo.number,
+            isProvisional: listInfo.isProvisional,
+            lastChange: getLastChange(person.id)
+          };
+        })
         .sort((a, b) => {
-          // Sort by total hours (ascending), then by list number (ascending), then by lastChange (ascending)
+          // Primary sort: by hours (lowest first)
           if (a.total !== b.total) return a.total - b.total;
+          
+          // Secondary sort: by last change time
+          if (a.lastChange !== b.lastChange) return a.lastChange - b.lastChange;
+          
+          // Tertiary sort: by seniority - provisional workers have lowest seniority
+          if (a.isProvisional && !b.isProvisional) return 1;
+          if (!a.isProvisional && b.isProvisional) return -1;
+          
+          // If both have same provisional status, compare by list numbers
           if (a.listNumber !== b.listNumber) return a.listNumber - b.listNumber;
-          return a.lastChange - b.lastChange;
+          return 0;
         });
       
       // Filter for people who can actually work this shift
@@ -3050,18 +3063,31 @@
       // Get ALL non-excluded people with their current totals  
       const allPeople = state.items
         .filter(person => !isPersonExcluded(person.id, weekendKey))
-        .map(person => ({
-          id: person.id,
-          name: person.name,
-          total: effectiveTotal(person.id),
-          listNumber: parseInt(person.lisNumber) || 99999, // Parse list number, default to high number if invalid
-          lastChange: getLastChange(person.id)
-        }))
+        .map(person => {
+          const listInfo = parseListNumber(person.lisNumber);
+          return {
+            id: person.id,
+            name: person.name,
+            total: effectiveTotal(person.id),
+            listNumber: listInfo.number,
+            isProvisional: listInfo.isProvisional,
+            lastChange: getLastChange(person.id)
+          };
+        })
         .sort((a, b) => {
-          // Sort by total hours (ascending), then by list number (ascending), then by lastChange (ascending)
+          // Primary sort: by hours (lowest first)
           if (a.total !== b.total) return a.total - b.total;
+          
+          // Secondary sort: by last change time
+          if (a.lastChange !== b.lastChange) return a.lastChange - b.lastChange;
+          
+          // Tertiary sort: by seniority - provisional workers have lowest seniority
+          if (a.isProvisional && !b.isProvisional) return 1;
+          if (!a.isProvisional && b.isProvisional) return -1;
+          
+          // If both have same provisional status, compare by list numbers
           if (a.listNumber !== b.listNumber) return a.listNumber - b.listNumber;
-          return a.lastChange - b.lastChange;
+          return 0;
         });
       
       // Filter for people who can actually work this shift (eligibility rules)
@@ -4830,6 +4856,32 @@
       keys.forEach(k => { const v = getHours(personId, k); if (typeof v === 'number') sum += v; });
       return normalizeQuarter(sum);
     }
+    // Parse list number and determine provisional status
+    function parseListNumber(lisNumber) {
+      if (!lisNumber || typeof lisNumber !== 'string') {
+        return { number: 99999, isProvisional: false };
+      }
+      
+      const trimmed = lisNumber.trim();
+      const isProvisional = trimmed.toLowerCase().startsWith('p');
+      
+      if (isProvisional) {
+        // Remove 'P' or 'p' prefix and parse the remaining number
+        const numberPart = trimmed.substring(1).trim();
+        const parsed = parseInt(numberPart);
+        return { 
+          number: isNaN(parsed) ? 99999 : parsed,
+          isProvisional: true 
+        };
+      } else {
+        const parsed = parseInt(trimmed);
+        return { 
+          number: isNaN(parsed) ? 99999 : parsed,
+          isProvisional: false 
+        };
+      }
+    }
+
     function effectiveTotal(personId){
       const base = baseSum(personId); // Legacy hour-based system
       const shiftTotal = calculatePersonShiftTotal(personId); // New shift-based system
@@ -4840,13 +4892,27 @@
     function compareByWhosNext(a, b){
       const at = effectiveTotal(a.id);
       const bt = effectiveTotal(b.id);
+      
+      // Primary sort: by hours (lowest first)
       if (at !== bt) return at - bt;
+      
+      // Secondary sort: by last change time
       const al = getLastChange(a.id);
       const bl = getLastChange(b.id);
       if (al !== bl) return al - bl;
-      const an = Number(a.lisNumber);
-      const bn = Number(b.lisNumber);
-      if (!Number.isNaN(an) && !Number.isNaN(bn) && an !== bn) return an - bn;
+      
+      // Tertiary sort: by seniority (list number), with provisional treated as lowest seniority
+      const aListInfo = parseListNumber(a.lisNumber);
+      const bListInfo = parseListNumber(b.lisNumber);
+      
+      // If one is provisional and other isn't, provisional goes after (lower seniority)
+      if (aListInfo.isProvisional && !bListInfo.isProvisional) return 1;  // a goes after b
+      if (!aListInfo.isProvisional && bListInfo.isProvisional) return -1; // a goes before b
+      
+      // If both have same provisional status, compare by list numbers
+      if (aListInfo.number !== bListInfo.number) return aListInfo.number - bListInfo.number;
+      
+      // Fall back to string comparison and name comparison
       if (String(a.lisNumber) !== String(b.lisNumber)) return String(a.lisNumber).localeCompare(String(b.lisNumber));
       return (a.name || '').localeCompare(b.name || '');
     }
