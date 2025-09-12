@@ -1538,10 +1538,14 @@
         delete refusals[weekendKey][personId][shiftCode];
       }
 
+      // Add chargeable hours to the shift-specific system (matches live site behavior)
+      const shiftDef = SHIFT_DEFINITIONS[shiftCode];
+      setShiftHours(personId, shiftCode, weekendKey, shiftDef.chargeableHours);
+      console.log(`   ✅ Added ${shiftDef.chargeableHours}h to shift system for table display`);
+
       saveToStorage();
       renderWhosNext();
       
-      const shiftDef = SHIFT_DEFINITIONS[shiftCode];
       console.log(`✅ ${person.name} accepted ${shiftDef.name}`);
     }
 
@@ -1557,6 +1561,13 @@
       if (refusals[weekendKey][personId][shiftCode] && refusals[weekendKey][personId][shiftCode].refused) {
         // Un-refuse the shift
         delete refusals[weekendKey][personId][shiftCode];
+        
+        // Remove penalty hours for un-refusal (matches live site behavior)
+        const shiftDef = SHIFT_DEFINITIONS[shiftCode];
+        const currentRefusalHours = getShiftHours(personId, shiftCode, weekendKey);
+        setShiftHours(personId, shiftCode, weekendKey, Math.max(0, currentRefusalHours - shiftDef.chargeableHours));
+        console.log(`   ✅ Removed ${shiftDef.chargeableHours}h penalty for un-refusal`);
+        
         console.log(`↩️ ${person.name} un-refused shift`);
       } else {
         // Refuse the shift
@@ -1571,7 +1582,12 @@
           delete shifts[weekendKey][personId][shiftCode];
         }
         
+        // Add penalty hours for refusal (matches live site behavior)
         const shiftDef = SHIFT_DEFINITIONS[shiftCode];
+        const currentRefusalHours = getShiftHours(personId, shiftCode, weekendKey);
+        setShiftHours(personId, shiftCode, weekendKey, currentRefusalHours + shiftDef.chargeableHours);
+        console.log(`   ✅ Added ${shiftDef.chargeableHours}h penalty for refusal`);
+        
         console.log(`❌ ${person.name} refused ${shiftDef.name}`);
       }
 
@@ -1620,46 +1636,73 @@
     }
 
     // ======= WEEKEND SHIFT SYSTEM =======
+    // MTA Overtime Weekend Shift Definitions (matches live site)
     const SHIFT_DEFINITIONS = {
-      'shift1_fri_sat': { 
+      'shift1_fri_sat': {
         code: 'shift1_fri_sat',
-        name: 'Shift 1', 
-        time: 'Fri 10p-Sat 2p', 
-        shortDisplay: 'Fri 10p-Sat 2p',
+        name: 'Shift 1: Fri-Sat',
         display: '10p-2p',
-        hours: 16 
+        shortDisplay: 'Fri 10p-Sat 2p',
+        startDay: 'fri', startTime: '22:00',
+        endDay: 'sat', endTime: '14:00',
+        totalHours: 16,
+        regularHours: 8,      // First 8 hours (10pm-6am) - regular time
+        overtimeHours: 8,     // Last 8 hours (6am-2pm) - overtime
+        chargeableHours: 8,   // Only overtime is chargeable
+        sequence: 1
       },
-      'shift2_sat_afternoon': { 
+      'shift2_sat_afternoon': {
         code: 'shift2_sat_afternoon',
-        name: 'Shift 2', 
-        time: 'Sat 2p-10p', 
-        shortDisplay: 'Sat 2p-10p',
+        name: 'Shift 2: Sat Afternoon',
         display: '2p-10p',
-        hours: 8 
+        shortDisplay: 'Sat 2p-10p',
+        startDay: 'sat', startTime: '14:00',
+        endDay: 'sat', endTime: '22:00',
+        totalHours: 8,
+        regularHours: 0,      // All overtime
+        overtimeHours: 8,     
+        chargeableHours: 8,   // All chargeable
+        sequence: 2
       },
-      'shift3_sat_night': { 
+      'shift3_sat_night': {
         code: 'shift3_sat_night',
-        name: 'Shift 3', 
-        time: 'Sat 10p-Sun 6a', 
-        shortDisplay: 'Sat 10p-Sun 6a',
+        name: 'Shift 3: Sat Night',
         display: '10p-6a',
-        hours: 8 
+        shortDisplay: 'Sat 10p-Sun 6a',
+        startDay: 'sat', startTime: '22:00',
+        endDay: 'sun', endTime: '06:00',
+        totalHours: 8,
+        regularHours: 0,      // All overtime
+        overtimeHours: 8,
+        chargeableHours: 8,   // All chargeable
+        sequence: 3
       },
-      'shift4_sun_morning': { 
+      'shift4_sun_morning': {
         code: 'shift4_sun_morning',
-        name: 'Shift 4', 
-        time: 'Sun 6a-2p', 
-        shortDisplay: 'Sun 6a-2p',
+        name: 'Shift 4: Sun Morning',
         display: '6a-2p',
-        hours: 8 
+        shortDisplay: 'Sun 6a-2p',
+        startDay: 'sun', startTime: '06:00',
+        endDay: 'sun', endTime: '14:00',
+        totalHours: 8,
+        regularHours: 0,      // All overtime
+        overtimeHours: 8,
+        chargeableHours: 8,   // All chargeable
+        sequence: 4
       },
-      'shift5_2_to_finish': { 
+      'shift5_2_to_finish': {
         code: 'shift5_2_to_finish',
-        name: 'Shift 5', 
-        time: 'Sun 2p-Mon 6a', 
-        shortDisplay: 'Sun 2p-Mon 6a',
+        name: 'Shift 5: 2 to Finish',
         display: '2p-6a',
-        hours: 16 
+        shortDisplay: 'Sun 2p-Mon 6a',
+        startDay: 'sun', startTime: '14:00',
+        endDay: 'mon', endTime: '06:00',
+        totalHours: 16,
+        regularHours: 0,      // All overtime
+        overtimeHours: 16,
+        chargeableHours: 16,  // All chargeable - "2 to finish"
+        sequence: 5,
+        special: true         // Special "2 to finish" shift
       }
     };
 
@@ -2676,7 +2719,7 @@
             for (let s = 0; s < numShifts; s++) {
               const randomShift = shiftCodes[Math.floor(Math.random() * shiftCodes.length)];
               if (!shiftHours[worker.id][currentWeekendKey][randomShift]) {
-                const baseHours = SHIFT_DEFINITIONS[randomShift].hours;
+                const baseHours = SHIFT_DEFINITIONS[randomShift].chargeableHours;
                 // Add some realistic variation: 0.75x to 1.25x base hours
                 const multiplier = 0.75 + (Math.random() * 0.5);
                 const actualHours = Math.max(4, Math.min(20, baseHours * multiplier));
