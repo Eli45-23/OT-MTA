@@ -1,0 +1,2941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>OT-MTA - Improved Original Layout</title>
+  <style>
+    :root { 
+      --bg:#0c1117; 
+      --panel:#0f1621; 
+      --panel-alt: #121b2a;
+      --muted:#7b869a; 
+      --text:#eaf1ff; 
+      --border:rgba(255,255,255,0.08); 
+      --border-strong:rgba(255,255,255,0.12);
+      --accent:#60a5fa; 
+      --accent-hover:#3b82f6;
+      --success:#22c55e; 
+      --success-hover:#16a34a;
+      --danger:#ef4444; 
+      --danger-hover:#dc2626;
+      --shadow:0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06); 
+      --shadow-lg:0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+      --shadow-xl:0 20px 25px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.04);
+      --r:12px; 
+      --pad:20px; 
+      --gap:20px; 
+      --gap-lg:32px;
+      
+      /* Improved spacing system */
+      --space-xs: 8px;
+      --space-sm: 12px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+    }
+    
+    * { box-sizing: border-box; }
+    body { 
+      margin:0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+      background: var(--bg); 
+      color:var(--text); 
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      padding: var(--space-xl); 
+    }
+    
+    /* Header with better visual hierarchy */
+    header.stickybar { 
+      position:sticky; 
+      top:0; 
+      z-index:60; 
+      backdrop-filter:saturate(120%) blur(12px); 
+      background:linear-gradient(to bottom, rgba(15,22,33,.95), rgba(15,22,33,.90)); 
+      border-bottom:1px solid var(--border-strong); 
+      padding: var(--space-md) var(--space-xl); 
+      display:flex; 
+      align-items:center; 
+      justify-content:space-between; 
+      gap: var(--space-lg); 
+      margin: calc(-1 * var(--space-xl)) calc(-1 * var(--space-xl)) var(--space-xl) calc(-1 * var(--space-xl));
+      box-shadow: var(--shadow);
+    }
+    
+    h1 { 
+      font-size: 28px; 
+      margin: 0; 
+      font-weight: 700; 
+      letter-spacing: -0.025em; 
+      background: linear-gradient(135deg, var(--text), var(--accent));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .tag { 
+      font-size:13px; 
+      color:var(--muted); 
+      background: rgba(123,134,154,0.1);
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    /* Improved panel styling */
+    .panel { 
+      background: var(--panel); 
+      border:1px solid var(--border); 
+      border-radius: var(--r); 
+      box-shadow: var(--shadow); 
+      margin-bottom: var(--space-lg);
+      overflow: hidden;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .panel:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-strong);
+    }
+    
+    .panel .head { 
+      display:flex; 
+      align-items:center; 
+      justify-content:space-between; 
+      padding: var(--space-lg) var(--space-xl); 
+      border-bottom: 1px solid var(--border); 
+      background: var(--panel-alt);
+      min-height: 60px;
+    }
+    
+    .panel .head strong {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    
+    .panel .body { 
+      padding: var(--space-xl); 
+    }
+
+    /* Enhanced form styling */
+    form.inline { 
+      display:grid; 
+      grid-template-columns: 1fr 1fr 1fr auto; 
+      gap: var(--space-lg); 
+      align-items: end;
+    }
+    
+    @media (max-width: 1024px) { 
+      form.inline { grid-template-columns: 1fr 1fr; gap: var(--space-md); } 
+    }
+    
+    @media (max-width: 768px) { 
+      form.inline { grid-template-columns: 1fr; gap: var(--space-md); } 
+    }
+    
+    label { 
+      font-size: 14px; 
+      color: var(--text); 
+      display:block; 
+      margin-bottom: var(--space-xs); 
+      font-weight: 500;
+    }
+    
+    .muted { color: var(--muted); font-weight: 400; }
+    
+    input[type="text"], input[type="number"], input[type="search"], input[type="month"] { 
+      width:100%; 
+      height:48px; 
+      padding: 0 var(--space-md); 
+      border-radius: var(--r); 
+      border:1px solid var(--border); 
+      background: rgba(255,255,255,0.02); 
+      color: var(--text); 
+      outline:none; 
+      transition: all .2s ease; 
+      font-size: 15px;
+      font-family: inherit;
+    }
+    
+    input::placeholder { 
+      color: var(--muted); 
+      font-weight: 400;
+    }
+    
+    input:focus { 
+      border-color: var(--accent); 
+      box-shadow: 0 0 0 3px rgba(96,165,250,.2); 
+      background: rgba(255,255,255,0.04);
+    }
+    
+    input:hover:not(:focus) {
+      border-color: var(--border-strong);
+    }
+
+    /* Enhanced button styling */
+    button { 
+      cursor:pointer; 
+      border:none; 
+      border-radius: var(--r); 
+      padding: 12px var(--space-lg); 
+      font-weight:600; 
+      font-size: 14px;
+      color:var(--text); 
+      background: rgba(255,255,255,0.08); 
+      border:1px solid var(--border); 
+      transition: all .15s ease; 
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+    }
+    
+    button:hover { 
+      background: rgba(255,255,255,0.12);
+      border-color: var(--border-strong);
+      transform: translateY(-1px); 
+      box-shadow: var(--shadow);
+    }
+    
+    button.primary { 
+      background: var(--success); 
+      color: white; 
+      border-color: var(--success); 
+    }
+    
+    button.primary:hover {
+      background: var(--success-hover);
+      border-color: var(--success-hover);
+      box-shadow: 0 4px 12px rgba(34,197,94,.3);
+    }
+    
+    button.danger { 
+      background: var(--danger); 
+      color:white; 
+      border-color: var(--danger); 
+    }
+    
+    button.danger:hover {
+      background: var(--danger-hover);
+      border-color: var(--danger-hover);
+      box-shadow: 0 4px 12px rgba(239,68,68,.3);
+    }
+    
+    button.ghost { 
+      background: transparent; 
+      color: var(--muted); 
+    }
+    
+    button:disabled { 
+      opacity:.5; 
+      cursor:not-allowed; 
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Improved pill styling */
+    .pill {
+      background: rgba(96,165,250,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(96,165,250,0.3);
+      padding: var(--space-xs) var(--space-md);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    /* Enhanced toolbar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      flex-wrap: wrap;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    /* Better table container */
+    .table-card {
+      position: relative;
+    }
+    
+    .table-wrap {
+      padding: 0;
+    }
+    
+    .scrollwrap {
+      overflow-x: auto;
+      overflow-y: visible;
+      border-radius: 0 0 var(--r) var(--r);
+      /* Enable smooth scrolling */
+      scroll-behavior: smooth;
+      /* Add scrollbar styling */
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) var(--panel);
+    }
+
+    /* Webkit scrollbar styling */
+    .scrollwrap::-webkit-scrollbar {
+      height: 8px;
+    }
+    
+    .scrollwrap::-webkit-scrollbar-track {
+      background: var(--panel);
+    }
+    
+    .scrollwrap::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 4px;
+    }
+    
+    .scrollwrap::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Enhanced Who's Next panel */
+    .who-card {
+      background: linear-gradient(135deg, var(--panel), var(--panel-alt));
+    }
+    
+    .who-card .head {
+      background: linear-gradient(135deg, rgba(96,165,250,0.1), rgba(79,70,229,0.1));
+      border-bottom-color: rgba(96,165,250,0.2);
+    }
+
+    /* Better spacing and layout */
+    .body-grid {
+      display: block;
+      width: 100%;
+    }
+    
+    .row { 
+      display:flex; 
+      gap: var(--space-md); 
+      align-items:center; 
+      flex-wrap: wrap; 
+    }
+
+    /* Fixed sidebar positioning with better styling */
+    .who-rail { 
+      width: 360px; 
+      position: fixed; 
+      right: var(--space-lg); 
+      top: 120px; 
+      max-height: 80vh; 
+      overflow-y: auto; 
+      z-index: 50;
+      border-radius: var(--r);
+      box-shadow: var(--shadow-xl);
+    }
+
+    /* Mobile responsive improvements */
+    @media (max-width: 1200px) {
+      .who-rail { 
+        position: relative; 
+        right: auto; 
+        top: auto; 
+        width: 100%; 
+        margin-top: var(--space-lg); 
+        max-height: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container { 
+        padding: var(--space-md); 
+      }
+      
+      header.stickybar {
+        padding: var(--space-sm) var(--space-md);
+        margin: calc(-1 * var(--space-md)) calc(-1 * var(--space-md)) var(--space-md) calc(-1 * var(--space-md));
+      }
+      
+      h1 { 
+        font-size: 22px; 
+      }
+      
+      .panel .head, .panel .body {
+        padding: var(--space-md) var(--space-lg);
+      }
+      
+      .toolbar {
+        gap: var(--space-sm);
+      }
+    }
+
+    /* Improved visual hierarchy */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Add some polish to interactive elements */
+    input[type="checkbox"] {
+      accent-color: var(--accent);
+    }
+
+    /* Better focus indicators */
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Table styling to match live site */
+    .ot-table { 
+      width: 100%; 
+      border-collapse: separate; 
+      border-spacing: 0; 
+      min-width: 2000px; /* Force horizontal scroll on smaller screens */
+      background: var(--panel);
+      table-layout: fixed; /* Ensures consistent column widths */
+    }
+    
+    .ot-table thead th { 
+      text-align: left; 
+      font-size: 12.5px; 
+      color: var(--muted); 
+      font-weight: 700; 
+      letter-spacing: .3px; 
+      padding: 10px 12px; 
+      user-select: none; 
+      border-right: 1px solid rgba(255,255,255,0.06); 
+      position: sticky; 
+      top: 0; 
+      background: var(--panel-alt); 
+      z-index: 10;
+    }
+    
+    .ot-table thead th:last-child { 
+      border-right: none; 
+    }
+    
+    .ot-table tbody td { 
+      padding: 10px 12px; 
+      vertical-align: middle; 
+      border-right: 1px solid rgba(255,255,255,0.04); 
+    }
+    
+    .ot-table tbody td:last-child { 
+      border-right: none; 
+    }
+    
+    .ot-table tbody tr { 
+      height: auto; 
+      transition: background-color 0.15s ease; 
+    }
+    
+    .ot-table tbody tr:hover { 
+      background: rgba(96,165,250,0.05); 
+    }
+    
+    .ot-table tfoot td { 
+      padding: 10px 8px; 
+      font-weight: 700; 
+      font-size: 0.95rem; 
+      border-top: 1px solid var(--border); 
+    }
+
+    /* Sticky columns */
+    .sticky-col { 
+      position: sticky; 
+      background: var(--panel); 
+      z-index: 20; 
+      box-shadow: 1px 0 0 0 var(--border) inset; 
+    }
+
+    /* Sticky left columns - List # and Name */
+    .ot-table .col-list {
+      position: sticky;
+      left: 0;
+      background: var(--panel);
+      z-index: 25;
+      box-shadow: 1px 0 0 0 var(--border) inset;
+    }
+    
+    .ot-table .col-name {
+      position: sticky;
+      left: 60px; /* Width of list number column */
+      background: var(--panel);
+      z-index: 25;
+      box-shadow: 1px 0 0 0 var(--border) inset;
+    }
+
+    /* Header sticky positioning */
+    .ot-table thead .col-list {
+      background: var(--panel-alt);
+      z-index: 30; /* Higher than body cells */
+    }
+    
+    .ot-table thead .col-name {
+      background: var(--panel-alt);
+      z-index: 30;
+    }
+
+    /* Footer sticky positioning */  
+    .ot-table tfoot .col-list,
+    .ot-table tfoot .col-name {
+      background: var(--panel);
+      z-index: 25;
+    }
+
+    /* Shift hour input cells */
+    .shift-hour-cell {
+      padding: 4px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .shift-hour-cell input[type="number"] {
+      width: 100%;
+      height: 36px;
+      font-size: 14px;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 0 8px;
+    }
+    
+    .shift-hour-cell input[type="number"]:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+      box-shadow: 0 0 0 2px rgba(96,165,250,.25);
+    }
+
+    /* Row total input styling */
+    .row-total-input {
+      width: 80px;
+      height: 32px;
+      text-align: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    /* Sortable headers */
+    .sortable { 
+      cursor: pointer; 
+    }
+    
+    .sortable .dir { 
+      margin-left: 6px; 
+      opacity: 0.7; 
+      font-size: 11px; 
+    }
+
+    /* Button groups and actions */
+    .btn-group {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+    }
+    
+    .secondary {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .secondary:hover {
+      background: var(--accent-hover);
+    }
+    
+    .danger {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .danger:hover {
+      background: var(--danger-hover);
+    }
+
+    /* Table column classes */
+    .col-list {
+      text-align: center;
+      width: 60px;
+      min-width: 60px;
+      max-width: 60px;
+    }
+    
+    .col-name {
+      width: 140px;
+      min-width: 140px;
+      max-width: 200px; /* Allow some flexibility for long names */
+    }
+    
+    .col-total {
+      text-align: center;
+      width: 100px;
+      min-width: 100px;
+    }
+    
+    .col-actions {
+      text-align: center;
+      width: 120px;
+      min-width: 120px;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .num {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Who's Next panel styling */
+    #wnList { 
+      max-height: 480px; 
+      overflow-y: auto; 
+      padding-right: 4px; 
+    }
+    
+    #wnList .wn-item { 
+      display: flex; 
+      flex-direction: column;
+      background: rgba(255,255,255,0.02); 
+      border: 1px solid var(--border); 
+      border-radius: 8px; 
+      padding: 12px; 
+      margin-bottom: 12px; 
+    }
+    
+    #wnList .wn-main {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    #wnList .wn-left { 
+      display: flex; 
+      align-items: flex-start; 
+      gap: 10px; 
+      min-width: 0; 
+    }
+    
+    #wnList .wn-rank { 
+      width: 28px; 
+      height: 28px;
+      background: var(--accent); 
+      color: white; 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: 700; 
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    #wnList .wn-name { 
+      font-weight: 600; 
+      color: var(--text); 
+      margin-bottom: 2px;
+      font-size: 16px;
+    }
+    
+    #wnList .wn-meta { 
+      font-size: 12px; 
+      color: var(--muted); 
+    }
+    
+    #wnList .wn-right { 
+      text-align: right; 
+      font-weight: 600; 
+    }
+
+    #wnList .weekend-hours {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Who's Next buttons */
+    #wnList .wn-buttons { 
+      display: flex; 
+      gap: 4px; 
+      margin-bottom: 8px; 
+    }
+    
+    #wnList .wn-btn { 
+      padding: 4px 8px; 
+      font-size: 11px; 
+      font-weight: 500; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      border: none; 
+      transition: all .15s ease; 
+    }
+    
+    #wnList .wn-btn:hover { 
+      transform: translateY(-1px); 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
+    }
+    
+    #wnList .wn-btn.not-here { 
+      background: var(--muted); 
+      color: white; 
+    }
+    
+    #wnList .wn-btn.not-here:hover { 
+      background: #6b7280; 
+    }
+
+    #wnList .wn-btn.secondary {
+      background: var(--accent);
+      color: white;
+    }
+
+    /* Who's Next shift buttons */
+    #wnList .wn-shifts { 
+      display: flex; 
+      gap: 6px; 
+      flex-wrap: wrap; 
+      align-items: center;
+    }
+    
+    #wnList .shift-btn-group { 
+      display: flex; 
+      gap: 4px;
+      align-items: center; 
+    }
+
+    .accept-ot-btn {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-size: 11px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .accept-ot-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .accept-ot-btn.assigned {
+      background: var(--success);
+      opacity: 0.8;
+    }
+
+    .refuse-shift {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-size: 11px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .refuse-shift:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .refuse-shift.refused {
+      background: var(--danger);
+      opacity: 0.8;
+    }
+
+    /* Eligibility styles */
+    .wn-item.ineligible {
+      opacity: 0.6;
+      background: rgba(239, 68, 68, 0.05);
+    }
+    
+    .ineligible-reason {
+      color: var(--danger);
+      font-size: 0.75em;
+      font-style: italic;
+      margin-top: 2px;
+    }
+
+    .shift-badge {
+      background: var(--accent);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.7em;
+      margin-left: 4px;
+      white-space: nowrap;
+    }
+
+    /* Weekend divider styling - blue lines between weekends */
+    .ot-table th[colspan="5"] {
+      border-left: 2px solid var(--accent);
+      background: rgba(96,165,250,0.05);
+    }
+    
+    .ot-table .shift-col:first-of-type {
+      border-left: 2px solid var(--accent);
+    }
+    
+    .ot-table .shift-hour-cell:first-child {
+      border-left: 2px solid var(--accent);
+    }
+    
+    /* Make sure the first shift column of each weekend has the blue border */
+    .ot-table tbody td.shift-hour-cell[data-shift="shift1_fri_sat"] {
+      border-left: 2px solid var(--accent);
+    }
+    
+    .ot-table tfoot td:nth-child(3),
+    .ot-table tfoot td:nth-child(8),
+    .ot-table tfoot td:nth-child(13),
+    .ot-table tfoot td:nth-child(18) {
+      border-left: 2px solid var(--accent);
+    }
+    
+    /* Total column also gets the green divider */
+    .ot-table .col-total {
+      border-left: 2px solid var(--success);
+      background: rgba(34,197,94,0.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="stickybar">
+      <h1>OT-MTA Overtime Management</h1>
+      <span class="tag">Live Hours & Fair Assignment</span>
+    </header>
+
+    <!-- Add Worker Form -->
+    <section class="panel">
+      <div class="head">
+        <strong>Add / Edit Entry</strong>
+        <span class="pill">25 entries</span>
+      </div>
+      <div class="body">
+        <form class="inline" id="addForm">
+          <div>
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" placeholder="e.g., Jane Doe" autocomplete="name" required />
+          </div>
+          <div>
+            <label for="listNumber">List # <span class="muted">(optional)</span></label>
+            <input id="listNumber" name="listNumber" type="text" placeholder="e.g., 8891" autocomplete="off" />
+          </div>
+          <div>
+            <label for="initialHours">Hours <span class="muted">(optional)</span></label>
+            <input id="initialHours" name="initialHours" type="number" inputmode="decimal" min="0" max="1000" step="0.25" placeholder="e.g., 25.5" autocomplete="off" />
+          </div>
+          <div class="row">
+            <button type="submit" class="primary" id="saveBtn">Add</button>
+            <button type="button" class="ghost" id="cancelEditBtn" style="display:none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Search Panel -->
+    <section class="panel">
+      <div class="body">
+        <input id="search" type="search" placeholder="🔍 Search by name, list #, or pass #…" aria-label="Search workers" style="margin: 0;" />
+      </div>
+    </section>
+    
+    <!-- Location Configuration Panel -->
+    <section class="panel" id="locationConfigPanel">
+      <div class="head">
+        <strong>Location Settings</strong>
+        <span class="pill">Multi-Location Support</span>
+      </div>
+      <div class="body">
+        <div class="row" style="margin-bottom: var(--space-md);">
+          <label style="flex: 1;">
+            <span style="display: block; margin-bottom: var(--space-xs); font-weight: 600;">Number of Locations:</span>
+            <div style="display: flex; align-items: center; gap: var(--space-md);">
+              <input 
+                id="locationCountInput" 
+                type="number" 
+                min="1" 
+                max="10" 
+                value="1" 
+                style="width: 80px; margin: 0;"
+                title="Each shift requires 2 people per location"
+              />
+              <button id="updateLocationBtn" class="primary">Update</button>
+            </div>
+          </label>
+        </div>
+        <div class="location-capacity-info" style="font-size: 13px; color: var(--muted);">
+          <div style="margin-bottom: 4px;">
+            <strong>Capacity per shift:</strong> <span id="shiftCapacity">2 people</span> (1 location × 2 people)
+          </div>
+          <div style="margin-bottom: 4px;">
+            <strong>Total weekend capacity:</strong> <span id="totalCapacity">10 people</span> (5 shifts × 1 location × 2 people)
+          </div>
+          <div style="font-style: italic; color: var(--muted);">
+            Each shift requires exactly 2 people to work it. Increase locations to allow more people per shift.
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Main Hours Table -->
+    <section class="panel table-card">
+      <div class="head toolbar">
+        <div class="spacer"></div>
+        <div class="toolbar">
+          <label class="pill" title="Select month to show Fri–Mon weekends">
+            <span class="muted">📅 Month</span>
+            <input id="monthPicker" type="month" style="margin-left: var(--space-xs); background:transparent; color:var(--text); border:none; outline:none; height:32px;" />
+          </label>
+          <span class="pill" id="tableMonthPill">Current Month</span>
+          <label class="pill" title="Admin mode (visual)">
+            <input id="adminSwitch" type="checkbox" disabled />
+            <span style="margin-left: var(--space-xs);">👨‍💼 Admin</span>
+          </label>
+          <button id="importBtn" class="ghost" title="Import data from CSV or JSON">📥 Import</button>
+          <button id="exportCsvBtn" class="primary" title="Download as CSV">Export CSV</button>
+          <button id="exportJsonBtn" class="secondary" title="Download as JSON">Export JSON</button>
+          <button id="clearAllBtn" class="danger" title="Remove all entries">🗑️ Clear All</button>
+          <input type="file" id="importFile" style="display: none;" accept=".csv,.json" />
+        </div>
+      </div>
+      <div class="body table-wrap">
+        <div class="scrollwrap table-scroll">
+          <div id="totalHelp" class="sr-only">Edit the cumulative total hours (across all months) to add an adjustment. The system will automatically calculate the adjustment needed.</div>
+          <table id="table" class="ot-table">
+            <thead id="thead"></thead>
+            <tbody id="tbody">
+              <!-- rows render here -->
+            </tbody>
+            <tfoot id="tfoot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Who's Next Panel -->
+    <section class="panel who-card" id="whosNextPanel">
+      <div class="head">
+        <strong>Who's Next</strong>
+        <span class="pill" id="wnMonthPill" style="background: rgba(123,134,154,0.2); color: var(--muted);">September 2025</span>
+      </div>
+      <div class="body">
+        <!-- Weekend Status Panel -->
+        <div style="background: rgba(15,22,33,0.8); border: 1px solid var(--border); border-radius: var(--space-xs); padding: var(--space-lg); margin-bottom: var(--space-md);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text);">Weekend Status</h3>
+            <div style="font-size: 12px; color: var(--muted);">Working for: Sep 11 → Sep 14 • Last: Sep 5 → Sep 8</div>
+          </div>
+          
+          <!-- Progress Summary -->
+          <div style="margin-bottom: var(--space-lg);">
+            <div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: var(--space-xs);" id="progressText">0/10 positions filled (0%)</div>
+            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+              <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--success), var(--accent)); border-radius: 3px; transition: width 0.3s ease;"></div>
+            </div>
+          </div>
+          
+          <!-- Shift Status List -->
+          <div id="shiftStatusList">
+            <div class="shift-status-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-size: 14px; color: var(--text);">Fri 10p-Sat 2p</span>
+              <span class="shift-counter" style="font-size: 14px; font-weight: 600; color: var(--muted);">0/2</span>
+            </div>
+            <div class="shift-status-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-size: 14px; color: var(--text);">Sat 2p-10p</span>
+              <span class="shift-counter" style="font-size: 14px; font-weight: 600; color: var(--muted);">0/2</span>
+            </div>
+            <div class="shift-status-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-size: 14px; color: var(--text);">Sat 10p-Sun 6a</span>
+              <span class="shift-counter" style="font-size: 14px; font-weight: 600; color: var(--muted);">0/2</span>
+            </div>
+            <div class="shift-status-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-size: 14px; color: var(--text);">Sun 6a-2p</span>
+              <span class="shift-counter" style="font-size: 14px; font-weight: 600; color: var(--muted);">0/2</span>
+            </div>
+            <div class="shift-status-item" style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-sm) 0;">
+              <span style="font-size: 14px; color: var(--text);">2 to Finish</span>
+              <span class="shift-counter" style="font-size: 14px; font-weight: 600; color: var(--muted);">0/2</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Search Filter -->
+        <div style="margin-bottom: var(--space-md);">
+          <input id="wnSearch" type="search" placeholder="Filter by name, list #, pass #" aria-label="Filter Who's Next" style="width: 100%; margin: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);" />
+        </div>
+        
+        <!-- Worker Rankings List -->
+        <div id="wnList" aria-live="polite">
+          <!-- Dynamic ranking list will be populated by JavaScript -->
+        </div>
+        
+        <!-- Footer -->
+        <div style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid var(--border); font-size: 12px; color: var(--muted);">
+          Reflects live totals. Edit hours in the main table.
+        </div>
+      </div>
+    </section>
+    
+    <!-- Footer Tips -->
+    <div style="margin-top: var(--space-lg); padding: var(--space-md); background: rgba(15,22,33,0.5); border-radius: var(--space-xs); border: 1px solid var(--border);">
+      <p style="margin: 0; font-size: 12px; color: var(--muted);">
+        <strong>Tip:</strong> Click headers to sort. Data never leaves your device.
+      </p>
+      <div style="text-align: right; margin-top: var(--space-xs); font-size: 10px; color: rgba(123,134,154,0.6);">v1</div>
+    </div>
+  </div>
+
+  <script>
+    // ======= DATA PERSISTENCE =======
+    const STORAGE_KEYS = {
+      entries: 'pass-list-entries-v1',
+      hours: 'pass-list-hours-v1', 
+      adjustments: 'ot_adjustments_v1',
+      lastChange: 'ot_last_change_v1'
+    };
+
+    // Location configuration constants
+    const LOCATION_CONFIG_KEY = 'location_config_v1'; // location configuration settings
+    // Shift hours now use 'shift-hours-v1' key directly (matches live site)
+    const EXCLUDED_KEY = 'wn_excluded_v1'; // weekend-specific exclusions for Who's Next
+    const SHIFTS_KEY = 'pass-list-shifts-v1'; // shift assignments per weekend
+    const REFUSALS_KEY = 'shift_refusals_v1'; // shift refusals with work status tracking
+    const DEFAULT_LOCATION_COUNT = 1; // Default to single location for backward compatibility
+
+    // ======= DATA STRUCTURES =======
+    let workers = [];
+    let hoursData = {}; // {personId: {YYYY-MM-DD: hours}} - legacy system
+    // Note: shiftHours now stored directly in localStorage with live site compatible format
+    let adjustments = {}; // {personId: adjustmentValue}
+    let excluded = {}; // {weekendKey: {personId: reason}}
+    let shifts = {}; // {weekendKey: {personId: {shiftCode: {assigned: true}}}}
+    let refusals = {}; // {weekendKey: {personId: {shiftCode: {refused: true, worked: false}}}}
+    let currentMonth = new Date().toISOString().slice(0, 7);
+    let wnSearchQuery = ''; // Who's Next search filter
+    let searchQuery = ''; // Main table search filter
+    
+    // Sorting state
+    let sortState = {
+      key: 'lisNumber',
+      dir: 'asc'
+    };
+
+    function setSort(key) {
+      if (sortState.key === key) {
+        sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortState.key = key;
+        sortState.dir = 'asc';
+      }
+      render();
+    }
+
+    // ======= UTILITY FUNCTIONS =======
+    function generateId() {
+      return Date.now() + Math.random().toString(36).substr(2, 9);
+    }
+
+    function normalize(str) { 
+      const result = (str || '').toString().trim();
+      // Remove any stray HTML or weird characters that could cause rendering issues
+      return result.replace(/<[^>]*>/g, '').replace(/[\r\n\t]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function normalizeHours(value) {
+      const num = parseFloat(value) || 0;
+      return Math.round(num * 4) / 4; // Round to nearest 0.25
+    }
+
+    function getWeekendDates(year, month) {
+      const monthIdx = month - 1; // JS Date month is 0-based
+      // Find first Friday of the month (0=Sun..6=Sat; 5=Fri)
+      const first = new Date(year, monthIdx, 1);
+      const delta = (5 - first.getDay() + 7) % 7;
+      let fri = new Date(year, monthIdx, 1 + delta);
+      
+      const weekends = [];
+      // Include weekend if Friday is in the current month (even if Monday spills over)
+      while (fri.getMonth() === monthIdx && fri.getDate() <= 31) {
+        const sat = new Date(fri); sat.setDate(sat.getDate() + 1);
+        const sun = new Date(fri); sun.setDate(sun.getDate() + 2);
+        const mon = new Date(fri); mon.setDate(mon.getDate() + 3);
+        
+        const weekend = {
+          friday: new Date(fri),
+          saturday: new Date(sat),
+          sunday: new Date(sun),
+          monday: new Date(mon),
+          dates: [
+            fri.toISOString().split('T')[0],   // Friday for Shift 1 (Fri 10p-Sat 2p)
+            sat.toISOString().split('T')[0],   // Saturday for Shift 2 (Sat 2p-10p)
+            sat.toISOString().split('T')[0],   // Saturday for Shift 3 (Sat 10p-Sun 6a)
+            sun.toISOString().split('T')[0],   // Sunday for Shift 4 (Sun 6a-2p)
+            sun.toISOString().split('T')[0]    // Sunday for Shift 5 (Sun 2p-Mon 6a)
+          ]
+        };
+        
+        weekends.push(weekend);
+        fri.setDate(fri.getDate() + 7);
+      }
+      
+      return weekends;
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // ======= DATA PERSISTENCE FUNCTIONS =======
+    function saveToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.entries, JSON.stringify(workers));
+        localStorage.setItem(STORAGE_KEYS.hours, JSON.stringify(hoursData));
+        // shiftHours now managed directly by setShiftHours function
+        localStorage.setItem(STORAGE_KEYS.adjustments, JSON.stringify(adjustments));
+        localStorage.setItem(EXCLUDED_KEY, JSON.stringify(excluded));
+        localStorage.setItem(SHIFTS_KEY, JSON.stringify(shifts));
+        localStorage.setItem(REFUSALS_KEY, JSON.stringify(refusals));
+        localStorage.setItem(STORAGE_KEYS.lastChange + '::' + Date.now(), new Date().toISOString());
+      } catch (e) {
+        console.error('Failed to save to localStorage:', e);
+      }
+    }
+
+    // === Location Configuration System ===
+    // Load location configuration
+    function loadLocationConfig(){
+      try { 
+        const stored = localStorage.getItem(LOCATION_CONFIG_KEY);
+        const config = stored ? JSON.parse(stored) : {};
+        return config.locationCount || DEFAULT_LOCATION_COUNT;
+      } catch(_) { return DEFAULT_LOCATION_COUNT; }
+    }
+    
+    function saveLocationConfig(){
+      try { 
+        const config = {
+          locationCount: locationCount,
+          lastUpdated: new Date().toISOString()
+        };
+        localStorage.setItem(LOCATION_CONFIG_KEY, JSON.stringify(config)); 
+        console.log('✅ Location configuration saved');
+      } catch(e) { 
+        console.error('❌ Failed to save location config:', e); 
+      }
+    }
+
+    function loadFromStorage() {
+      try {
+        const savedWorkers = localStorage.getItem(STORAGE_KEYS.entries);
+        const savedHours = localStorage.getItem(STORAGE_KEYS.hours);
+        // shiftHours now loaded directly by getShiftHours function
+        const savedAdjustments = localStorage.getItem(STORAGE_KEYS.adjustments);
+        const savedExcluded = localStorage.getItem(EXCLUDED_KEY);
+        const savedShifts = localStorage.getItem(SHIFTS_KEY);
+        const savedRefusals = localStorage.getItem(REFUSALS_KEY);
+
+        if (savedWorkers) workers = JSON.parse(savedWorkers);
+        if (savedHours) hoursData = JSON.parse(savedHours);
+        // shiftHours now loaded directly by getShiftHours function
+        if (savedAdjustments) adjustments = JSON.parse(savedAdjustments);
+        if (savedExcluded) excluded = JSON.parse(savedExcluded);
+        if (savedShifts) shifts = JSON.parse(savedShifts);
+        if (savedRefusals) refusals = JSON.parse(savedRefusals);
+
+        // Ensure all workers have required fields
+        workers.forEach(worker => {
+          if (!worker.id) worker.id = generateId();
+          if (!worker.createdAt) worker.createdAt = new Date().toISOString();
+          if (!worker.updatedAt) worker.updatedAt = new Date().toISOString();
+        });
+      } catch (e) {
+        console.error('Failed to load from localStorage:', e);
+        // Initialize with empty data if loading fails
+        workers = [];
+        hoursData = {};
+        shiftHours = {};
+        adjustments = {};
+        excluded = {};
+        shifts = {};
+        refusals = {};
+      }
+    }
+
+    // ======= CALCULATION FUNCTIONS =======
+    function getPersonHours(personId, dateStr) {
+      return hoursData[personId] && hoursData[personId][dateStr] ? normalizeHours(hoursData[personId][dateStr]) : 0;
+    }
+
+    function setPersonHours(personId, dateStr, hours) {
+      if (!hoursData[personId]) hoursData[personId] = {};
+      hoursData[personId][dateStr] = normalizeHours(hours);
+      saveToStorage();
+    }
+
+    function baseSum(personId) {
+      // Sum ALL hours across ALL dates (legacy system)
+      let sum = 0;
+      const personHours = hoursData[personId] || {};
+      
+      // Check if person has shift-specific hours to prevent double-counting
+      const hasShiftHours = Object.keys(JSON.parse(localStorage.getItem('shift-hours-v1') || '{}')).some(key => key.startsWith(personId + '_'));
+      
+      if (!hasShiftHours) {
+        // Only count legacy hours if no shift-specific hours exist
+        Object.values(personHours).forEach(hours => {
+          if (typeof hours === 'number') sum += hours;
+        });
+      }
+      
+      return normalizeHours(sum);
+    }
+
+    function calculatePersonShiftTotal(personId) {
+      let total = 0;
+      
+      // Sum shift hours across all weekends
+      const shiftHoursKey = `shift-hours-v1`;
+      let shiftHours = {};
+      try {
+        shiftHours = JSON.parse(localStorage.getItem(shiftHoursKey) || '{}');
+      } catch(_) {}
+      
+      // Iterate through all person-weekend entries
+      Object.keys(shiftHours).forEach(personKey => {
+        if (personKey.startsWith(personId + '_')) {
+          const personShiftData = shiftHours[personKey] || {};
+          Object.values(personShiftData).forEach(hours => {
+            if (typeof hours === 'number') total += hours;
+          });
+        }
+      });
+      
+      return normalizeHours(total);
+    }
+
+    function effectiveTotal(personId) {
+      const base = baseSum(personId); // Legacy hour-based system  
+      const shiftTotal = calculatePersonShiftTotal(personId); // New shift-based system
+      const adj = Number(adjustments[personId] || 0);
+      return normalizeHours(base + shiftTotal + adj);
+    }
+
+    function calculateTotalHours(personId) {
+      // Wrapper for backward compatibility - use effectiveTotal instead
+      return effectiveTotal(personId);
+    }
+
+    function calculateWeekendTotal(personId, dates) {
+      return dates.reduce((sum, date) => sum + getPersonHours(personId, date), 0);
+    }
+
+    // ======= SHIFT SYSTEM HELPERS =======
+    function getWeekendKey(date) {
+      // Get Friday of the weekend for this date
+      const d = new Date(date);
+      const dayOfWeek = d.getDay(); // 0=Sun, 5=Fri, 6=Sat
+      let friday = new Date(d);
+      
+      if (dayOfWeek === 0) { // Sunday - previous Friday
+        friday.setDate(d.getDate() - 2);
+      } else if (dayOfWeek === 1) { // Monday - previous Friday  
+        friday.setDate(d.getDate() - 3);
+      } else if (dayOfWeek >= 2 && dayOfWeek <= 4) { // Tue-Thu - next Friday
+        friday.setDate(d.getDate() + (5 - dayOfWeek));
+      } else if (dayOfWeek === 5) { // Friday - same day
+        // friday is already set correctly
+      } else if (dayOfWeek === 6) { // Saturday - previous day
+        friday.setDate(d.getDate() - 1);
+      }
+      
+      return friday.toISOString().split('T')[0];
+    }
+
+    function getShiftHours(personId, shiftCode, weekendKey) {
+      const shiftHoursKey = `shift-hours-v1`;
+      let shiftHours = {};
+      try {
+        shiftHours = JSON.parse(localStorage.getItem(shiftHoursKey) || '{}');
+      } catch(_) {}
+      
+      const personKey = `${personId}_${weekendKey}`;
+      const personShiftHours = shiftHours[personKey] || {};
+      return personShiftHours[shiftCode] || 0;
+    }
+
+    function setShiftHours(personId, shiftCode, weekendKey, hours) {
+      const shiftHoursKey = `shift-hours-v1`;
+      let shiftHours = {};
+      try {
+        shiftHours = JSON.parse(localStorage.getItem(shiftHoursKey) || '{}');
+      } catch(_) {}
+      
+      const personKey = `${personId}_${weekendKey}`;
+      if (!shiftHours[personKey]) shiftHours[personKey] = {};
+      
+      if (hours > 0) {
+        shiftHours[personKey][shiftCode] = normalizeHours(hours);
+      } else {
+        delete shiftHours[personKey][shiftCode];
+        if (Object.keys(shiftHours[personKey]).length === 0) {
+          delete shiftHours[personKey];
+        }
+      }
+      
+      try {
+        localStorage.setItem(shiftHoursKey, JSON.stringify(shiftHours));
+      } catch(_) {}
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Who's Next helper functions
+    function getCurrentWeekendKey() {
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // 0=Sun, 5=Fri, 6=Sat
+      
+      // Find the Friday of this weekend
+      let friday = new Date(today);
+      if (dayOfWeek === 0) { // Sunday - current weekend Friday was 2 days ago
+        friday.setDate(today.getDate() - 2);
+      } else if (dayOfWeek === 1) { // Monday - current weekend Friday was 3 days ago
+        friday.setDate(today.getDate() - 3);
+      } else if (dayOfWeek >= 2 && dayOfWeek <= 4) { // Tue-Thu - next weekend
+        friday.setDate(today.getDate() + (5 - dayOfWeek));
+      } else if (dayOfWeek === 5) { // Friday - today
+        // friday is already correct
+      } else if (dayOfWeek === 6) { // Saturday - yesterday
+        friday.setDate(today.getDate() - 1);
+      }
+      
+      return friday.toISOString().split('T')[0];
+    }
+
+    function isPersonExcluded(personId, weekendKey) {
+      return excluded[weekendKey] && excluded[weekendKey][personId];
+    }
+
+    function getPersonWeekendHours(personId, weekendKey) {
+      // Sum all shift hours for this person for this weekend
+      let total = 0;
+      if (shiftHours[personId] && shiftHours[personId][weekendKey]) {
+        Object.values(shiftHours[personId][weekendKey]).forEach(hours => {
+          total += hours || 0;
+        });
+      }
+      return total;
+    }
+
+    function displayHours(hours) {
+      return hours ? hours.toFixed(2).replace(/\.00$/, '') : '0';
+    }
+
+    function getActiveShiftsForWeekend(weekendKey) {
+      return Object.values(SHIFT_DEFINITIONS)
+        .map(shift => {
+          const assigned = getShiftAssignedCount(shift.code, weekendKey);
+          const capacity = getShiftCapacity(shift.code);
+          const remaining = Math.max(0, capacity - assigned);
+          const isFull = assigned >= capacity;
+          
+          return {
+            code: shift.code,
+            name: shift.name,
+            shortDisplay: shift.shortDisplay || shift.display,
+            assigned,
+            capacity,
+            remaining,
+            isFull
+          };
+        });
+    }
+
+    function getShiftAssignedCount(shiftCode, weekendKey) {
+      let count = 0;
+      if (shifts[weekendKey]) {
+        Object.values(shifts[weekendKey]).forEach(personShifts => {
+          if (personShifts[shiftCode] && personShifts[shiftCode].assigned) {
+            count++;
+          }
+        });
+      }
+      return count;
+    }
+
+    function getShiftCapacity(shiftCode) {
+      return locationCount * 2; // 2 people per location
+    }
+
+    function getAcceptOTButtonState(personId, shiftCode, weekendKey) {
+      const isAssigned = shifts[weekendKey] && 
+                        shifts[weekendKey][personId] && 
+                        shifts[weekendKey][personId][shiftCode] && 
+                        shifts[weekendKey][personId][shiftCode].assigned;
+      
+      const shiftCapacity = getShiftCapacity(shiftCode);
+      const assignedCount = getShiftAssignedCount(shiftCode, weekendKey);
+      const isFull = assignedCount >= shiftCapacity;
+      
+      if (isAssigned) {
+        return {
+          state: 'assigned',
+          cssClass: 'assigned',
+          title: `Already assigned to this shift`,
+          disabled: false
+        };
+      } else if (isFull) {
+        return {
+          state: 'full',
+          cssClass: 'full',
+          title: `Shift is full (${assignedCount}/${shiftCapacity})`,
+          disabled: true
+        };
+      } else {
+        return {
+          state: 'available',
+          cssClass: 'available',
+          title: `Accept this shift (${assignedCount}/${shiftCapacity} assigned)`,
+          disabled: false
+        };
+      }
+    }
+
+    function getRefusalButtonState(personId, shiftCode, weekendKey) {
+      const isRefused = refusals[weekendKey] && 
+                       refusals[weekendKey][personId] && 
+                       refusals[weekendKey][personId][shiftCode] && 
+                       refusals[weekendKey][personId][shiftCode].refused;
+      
+      if (isRefused) {
+        return {
+          state: 'refused',
+          cssClass: 'refuse-shift refused',
+          title: `Already refused this shift`,
+          disabled: false
+        };
+      } else {
+        return {
+          state: 'available',
+          cssClass: 'refuse-shift',
+          title: `Refuse this shift`,
+          disabled: false
+        };
+      }
+    }
+
+    function scrollToPerson(personId) {
+      const tr = Array.from(el.tbody.querySelectorAll('tr')).find(tr => tr.querySelector(`button[data-id="${personId}"]`));
+      if (tr) {
+        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const nameCell = tr.querySelector('.col-name') || tr.children[1];
+        if (nameCell) { 
+          nameCell.classList.add('pulse'); 
+          setTimeout(() => nameCell.classList.remove('pulse'), 1300); 
+        }
+      }
+    }
+
+    // Who's Next event listeners
+    function addWhosNextEventListeners() {
+      const wnList = document.getElementById('wnList');
+      if (!wnList) return;
+
+      wnList.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        
+        e.stopPropagation();
+        
+        const personId = btn.getAttribute('data-person-id');
+        const action = btn.getAttribute('data-action');
+        
+        if (action === 'accept-ot') {
+          const shiftCode = btn.getAttribute('data-shift-code');
+          const weekendKey = btn.getAttribute('data-weekend-key');
+          handleAcceptShift(personId, shiftCode, weekendKey);
+        } else if (action === 'refuse') {
+          const shiftCode = btn.getAttribute('data-shift-code');
+          const weekendKey = btn.getAttribute('data-weekend-key');
+          handleRefuseShift(personId, shiftCode, weekendKey);
+        } else if (action === 'nothere') {
+          handleNotHere(personId);
+        } else if (btn.classList.contains('restore-person')) {
+          handleRestorePerson(personId);
+        }
+      });
+    }
+
+    // Shift assignment and refusal handlers
+    function handleAcceptShift(personId, shiftCode, weekendKey) {
+      const person = workers.find(w => w.id === personId);
+      if (!person) return;
+
+      // Initialize data structures if needed
+      if (!shifts[weekendKey]) shifts[weekendKey] = {};
+      if (!shifts[weekendKey][personId]) shifts[weekendKey][personId] = {};
+
+      // Check if shift is already full
+      const capacity = getShiftCapacity(shiftCode);
+      const assigned = getShiftAssignedCount(shiftCode, weekendKey);
+      
+      if (assigned >= capacity) {
+        alert(`Shift is already full (${assigned}/${capacity})`);
+        return;
+      }
+
+      // Assign the shift
+      shifts[weekendKey][personId][shiftCode] = { assigned: true, timestamp: new Date().toISOString() };
+      
+      // Remove any refusal for this shift
+      if (refusals[weekendKey] && refusals[weekendKey][personId] && refusals[weekendKey][personId][shiftCode]) {
+        delete refusals[weekendKey][personId][shiftCode];
+      }
+
+      saveToStorage();
+      renderWhosNext();
+      
+      const shiftDef = SHIFT_DEFINITIONS[shiftCode];
+      console.log(`✅ ${person.name} accepted ${shiftDef.name}`);
+    }
+
+    function handleRefuseShift(personId, shiftCode, weekendKey) {
+      const person = workers.find(w => w.id === personId);
+      if (!person) return;
+
+      // Initialize data structures if needed
+      if (!refusals[weekendKey]) refusals[weekendKey] = {};
+      if (!refusals[weekendKey][personId]) refusals[weekendKey][personId] = {};
+
+      // Check if already refused
+      if (refusals[weekendKey][personId][shiftCode] && refusals[weekendKey][personId][shiftCode].refused) {
+        // Un-refuse the shift
+        delete refusals[weekendKey][personId][shiftCode];
+        console.log(`↩️ ${person.name} un-refused shift`);
+      } else {
+        // Refuse the shift
+        refusals[weekendKey][personId][shiftCode] = { 
+          refused: true, 
+          worked: false, 
+          timestamp: new Date().toISOString() 
+        };
+        
+        // Remove any assignment for this shift
+        if (shifts[weekendKey] && shifts[weekendKey][personId] && shifts[weekendKey][personId][shiftCode]) {
+          delete shifts[weekendKey][personId][shiftCode];
+        }
+        
+        const shiftDef = SHIFT_DEFINITIONS[shiftCode];
+        console.log(`❌ ${person.name} refused ${shiftDef.name}`);
+      }
+
+      saveToStorage();
+      renderWhosNext();
+    }
+
+    function handleNotHere(personId) {
+      const person = workers.find(w => w.id === personId);
+      if (!person) return;
+
+      const weekendKey = getCurrentWeekendKey();
+      
+      // Initialize exclusion structure if needed
+      if (!excluded[weekendKey]) excluded[weekendKey] = {};
+      
+      // Exclude the person
+      excluded[weekendKey][personId] = 'Not available this weekend';
+      
+      saveToStorage();
+      renderWhosNext();
+      
+      console.log(`🚫 ${person.name} marked as not here for this weekend`);
+    }
+
+    function handleRestorePerson(personId) {
+      const person = workers.find(w => w.id === personId);
+      if (!person) return;
+
+      const weekendKey = getCurrentWeekendKey();
+      
+      // Remove exclusion
+      if (excluded[weekendKey] && excluded[weekendKey][personId]) {
+        delete excluded[weekendKey][personId];
+        
+        // Clean up empty weekend objects
+        if (Object.keys(excluded[weekendKey]).length === 0) {
+          delete excluded[weekendKey];
+        }
+      }
+      
+      saveToStorage();
+      renderWhosNext();
+      
+      console.log(`✅ ${person.name} restored to Who's Next list`);
+    }
+
+    // ======= WEEKEND SHIFT SYSTEM =======
+    const SHIFT_DEFINITIONS = {
+      'shift1_fri_sat': { 
+        code: 'shift1_fri_sat',
+        name: 'Shift 1', 
+        time: 'Fri 10p-Sat 2p', 
+        shortDisplay: 'Fri 10p-Sat 2p',
+        display: '10p-2p',
+        hours: 16 
+      },
+      'shift2_sat_afternoon': { 
+        code: 'shift2_sat_afternoon',
+        name: 'Shift 2', 
+        time: 'Sat 2p-10p', 
+        shortDisplay: 'Sat 2p-10p',
+        display: '2p-10p',
+        hours: 8 
+      },
+      'shift3_sat_night': { 
+        code: 'shift3_sat_night',
+        name: 'Shift 3', 
+        time: 'Sat 10p-Sun 6a', 
+        shortDisplay: 'Sat 10p-Sun 6a',
+        display: '10p-6a',
+        hours: 8 
+      },
+      'shift4_sun_morning': { 
+        code: 'shift4_sun_morning',
+        name: 'Shift 4', 
+        time: 'Sun 6a-2p', 
+        shortDisplay: 'Sun 6a-2p',
+        display: '6a-2p',
+        hours: 8 
+      },
+      'shift5_2_to_finish': { 
+        code: 'shift5_2_to_finish',
+        name: 'Shift 5', 
+        time: 'Sun 2p-Mon 6a', 
+        shortDisplay: 'Sun 2p-Mon 6a',
+        display: '2p-6a',
+        hours: 16 
+      }
+    };
+
+    // Table element references
+    const el = {
+      tbody: document.getElementById('tbody'),
+      table: document.getElementById('table'),
+      thead: document.getElementById('thead'),
+      tfoot: document.getElementById('tfoot'),
+      monthPicker: document.getElementById('monthPicker'),
+      tableMonthPill: document.getElementById('tableMonthPill')
+    };
+
+    let currentWeekends = [];
+    let locationCount = DEFAULT_LOCATION_COUNT;
+
+    function updateLocationCount(newCount){
+      const clampedCount = Math.max(1, Math.min(10, parseInt(newCount) || DEFAULT_LOCATION_COUNT));
+      locationCount = clampedCount;
+      saveLocationConfig();
+      
+      // Update UI displays if they exist
+      const shiftCapacityEl = document.getElementById('shiftCapacity');
+      const totalCapacityEl = document.getElementById('totalCapacity');
+      
+      if (shiftCapacityEl) {
+        const shiftCapacity = locationCount * 2; // 2 people per location per shift
+        shiftCapacityEl.textContent = `${shiftCapacity} people`;
+        // Update the parent text to show the calculation
+        const parentDiv = shiftCapacityEl.parentElement;
+        if (parentDiv) {
+          parentDiv.innerHTML = `<strong>Capacity per shift:</strong> <span id="shiftCapacity">${shiftCapacity} people</span> (${locationCount} location${locationCount > 1 ? 's' : ''} × 2 people)`;
+        }
+      }
+      if (totalCapacityEl) {
+        const totalCapacity = Object.keys(shiftDefinitions).length * locationCount * 2;
+        totalCapacityEl.textContent = `${totalCapacity} people`;
+        // Update the parent text to show the calculation
+        const parentDiv = totalCapacityEl.parentElement;
+        if (parentDiv) {
+          parentDiv.innerHTML = `<strong>Total weekend capacity:</strong> <span id="totalCapacity">${totalCapacity} people</span> (5 shifts × ${locationCount} location${locationCount > 1 ? 's' : ''} × 2 people)`;
+        }
+      }
+      
+      // Update the input field to reflect the clamped value
+      document.getElementById('locationCountInput').value = locationCount;
+      
+      // Re-render everything to update shift capacity displays
+      renderAll();
+    }
+
+    // ======= RENDER FUNCTIONS =======
+    function render() {
+      const weekends = currentWeekends;
+      renderColgroups(weekends);
+      renderOvertimeHeader(weekends);
+
+      const frag = document.createDocumentFragment();
+      const colTotals = new Map();
+      
+      // Pre-filter rows to remove any obviously corrupted data before rendering
+      let validRows = workers.filter(r => {
+        if (!r || !r.id) return false;
+        const name = String(r.name || '').trim();
+        if (!name || /^\d+$/.test(name)) return false;
+        return true;
+      });
+
+      // Apply search filter (matching live site behavior)
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        validRows = validRows.filter(r => {
+          const name = (r.name || '').toLowerCase();
+          const listNumber = (r.listNumber || '').toLowerCase();
+          return name.includes(query) || listNumber.includes(query);
+        });
+      }
+
+      // Apply sorting
+      const { key, dir } = sortState;
+      const cmp = (a, b) => {
+        if (key === 'listNumber' || key === 'lisNumber') {
+          const na = Number(a.listNumber || a.lisNumber); 
+          const nb = Number(b.listNumber || b.lisNumber);
+          const A = Number.isFinite(na) ? na : Number.POSITIVE_INFINITY;
+          const B = Number.isFinite(nb) ? nb : Number.POSITIVE_INFINITY;
+          return A - B;
+        }
+        const A = (a[key] ?? '').toString().toLowerCase();
+        const B = (b[key] ?? '').toString().toLowerCase();
+        if (A < B) return -1; 
+        if (A > B) return 1; 
+        return 0;
+      };
+      validRows.sort(cmp);
+      if (dir === 'desc') validRows.reverse();
+      
+      console.log(`Rendering ${validRows.length} valid rows out of ${workers.length} total`);
+      
+      validRows.forEach(r => {
+        const tr = document.createElement('tr');
+        const cells = [];
+        // Validate data before rendering to prevent corruption
+        const safeName = String(r.name || '').trim() || 'Invalid Name';
+        const safeListNum = String(r.listNumber || '').trim();
+        
+        // Skip rows with obviously corrupted data
+        if (/^\d+$/.test(safeName)) {
+          console.warn('Skipping corrupted row:', r);
+          return; // Skip this iteration entirely
+        }
+        
+        // Sticky left columns: list, name
+        cells.push(`<td class="col-list num">${escapeHtml(safeListNum)}</td>`);
+        // Add title tooltip so very long names are still fully readable on hover
+        cells.push(`<td class="col-name name-cell" title="${escapeHtml(safeName)}">${escapeHtml(safeName)}</td>`);
+
+        // BaseSum: sum ALL hours for this person (cumulative across all months)
+        let baseSumAll = calculateTotalHours(r.id); // This is the cumulative total
+        let baseSumMonth = 0; // This is just for the current month display
+        
+        weekends.forEach(w => {
+          const currentWeekendKey = getWeekendKey(w.dates[0]);
+          
+          // Render 5 shift columns instead of 4 date columns
+          const shifts = [
+            'shift1_fri_sat',
+            'shift2_sat_afternoon', 
+            'shift3_sat_night',
+            'shift4_sun_morning',
+            'shift5_2_to_finish'
+          ];
+          
+          shifts.forEach((shiftCode, shiftIndex) => {
+            const shiftHours = getShiftHours(r.id, shiftCode, currentWeekendKey);
+            if (shiftHours > 0) {
+              baseSumMonth += shiftHours;
+              // Add to column totals using shift code as key
+              colTotals.set(shiftCode, (colTotals.get(shiftCode) || 0) + shiftHours);
+            }
+            const isFirstShift = shiftIndex === 0; // First shift of each weekend gets blue border
+            cells.push(renderShiftHourCell(r.id, shiftCode, currentWeekendKey, isFirstShift));
+          });
+        });
+
+        // Total hours for display (includes all hours + adjustments)
+        const cumulativeTotal = baseSumAll;
+        const totalDisplay = cumulativeTotal ? cumulativeTotal.toFixed(2).replace(/\.00$/, '') : '';
+        cells.push(`<td class="right row-total-cell" data-person="${r.id}" style="border-left: 2px solid var(--success); background: rgba(34,197,94,0.05);">
+          <input class="row-total-input" type="number" inputmode="decimal" min="-100000" max="1000000" step="0.25" autocomplete="off" enterkeyhint="done" placeholder="0 hrs" value="${totalDisplay}" data-person="${r.id}" aria-describedby="totalHelp" title="Edit cumulative total hours (includes all months) - system will calculate adjustment" />
+        </td>`);
+        cells.push(`<td class="right td-actions">
+            <div class="btn-group">
+              <button class="secondary" title="Edit" data-action="edit" data-id="${r.id}">Edit</button>
+              <button class="danger" title="Delete" data-action="delete" data-id="${r.id}">Delete</button>
+            </div>
+          </td>`);
+        // Render all rows without cell count validation
+        tr.innerHTML = cells.join('');
+        frag.appendChild(tr);
+      });
+      // Clear tbody before adding new content
+      el.tbody.innerHTML = '';
+      el.tbody.appendChild(frag);
+
+      renderTotalsRow(weekends, colTotals);
+    }
+    
+    function renderShiftHourCell(personId, shiftCode, currentWeekendKey, isFirstShift = false) {
+      const disabled = '';
+      const shiftDef = SHIFT_DEFINITIONS[shiftCode];
+      
+      if (!shiftDef) {
+        return `<td class="shift-hour-cell"><input type="number" value="0" disabled /></td>`;
+      }
+      
+      const hours = getShiftHours(personId, shiftCode, currentWeekendKey);
+      const inputId = `${personId}-${shiftCode}-${currentWeekendKey}`;
+      const borderStyle = isFirstShift ? 'border-left: 2px solid var(--accent);' : '';
+      
+      return `<td class="shift-hour-cell" data-person="${personId}" data-shift="${shiftCode}" data-weekend="${currentWeekendKey}" style="${borderStyle}">
+        <input 
+          type="number" 
+          id="${inputId}"
+          step="0.25" 
+          min="0" 
+          max="24"
+          value="${hours || ''}" 
+          placeholder="0"
+          data-person="${personId}" 
+          data-shift="${shiftCode}"
+          data-weekend="${currentWeekendKey}"
+          title="${shiftDef.name}: ${shiftDef.time}"
+          ${disabled}
+        />
+      </td>`;
+    }
+
+    function renderColgroups(weekends) {
+      const table = el.table;
+      // Remove existing colgroups
+      table.querySelectorAll('colgroup').forEach(cg => cg.remove());
+      
+      // Fixed columns (List # and Name)
+      const cgFixed = document.createElement('colgroup');
+      cgFixed.className = 'fixed';
+      cgFixed.innerHTML = '<col class="col-list" style="width: 60px;"><col class="col-name" style="width: 140px;">';
+      table.insertBefore(cgFixed, el.thead);
+      
+      // Shift columns
+      const cgShifts = document.createElement('colgroup');
+      cgShifts.className = 'shifts';
+      const shiftCols = [];
+      weekends.forEach(w => {
+        // 5 shifts per weekend, 90px each
+        for (let i = 0; i < 5; i++) {
+          shiftCols.push('<col class="col-shift" style="width: 90px;">');
+        }
+      });
+      cgShifts.innerHTML = shiftCols.join('');
+      table.insertBefore(cgShifts, el.thead);
+      
+      // Right fixed columns (Total and Actions)
+      const cgRight = document.createElement('colgroup');
+      cgRight.className = 'fixed-right';
+      cgRight.innerHTML = '<col class="col-total" style="width: 100px;"><col class="col-actions" style="width: 120px;">';
+      table.insertBefore(cgRight, el.thead);
+    }
+
+    function renderOvertimeHeader(weekends) {
+      // Row 1: fixed columns + weekend group headers + Row Total + Actions
+      const row1 = [];
+      row1.push('<tr class="thead-range">');
+      // Sticky first two columns for better readability when scrolling
+      row1.push('<th class="sortable col-list" scope="col" data-key="lisNumber" rowspan="2" title="List number for sorting">List # <span class="dir"></span></th>');
+      row1.push('<th class="sortable col-name" scope="col" data-key="name" rowspan="2">Name <span class="dir"></span></th>');
+      
+      // Weekend group headers
+      weekends.forEach((w, index) => {
+        const fridayStr = w.friday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const mondayStr = w.monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const borderStyle = 'border-left: 2px solid var(--accent); background: rgba(96,165,250,0.05);';
+        row1.push(`<th colspan="5" class="th-group" scope="colgroup" style="${borderStyle}">Fri ${fridayStr} → Mon ${mondayStr}</th>`);
+      });
+      
+      row1.push('<th rowspan="2" class="col-total sortable" scope="col" data-key="total" title="Total hours (all-time cumulative)" style="border-left: 2px solid var(--success); background: rgba(34,197,94,0.05);">Row Total<br><small class="muted">All-Time</small> <span class="dir"></span></th>');
+      row1.push('<th rowspan="2" class="col-actions" scope="col">Actions</th>');
+      row1.push('</tr>');
+
+      // Row 2: shift sub-headers
+      const row2 = [];
+      row2.push('<tr class="thead-shifts">');
+      weekends.forEach(w => {
+        // Get the 5 shift definitions in order
+        const shifts = [
+          'shift1_fri_sat',
+          'shift2_sat_afternoon', 
+          'shift3_sat_night',
+          'shift4_sun_morning',
+          'shift5_2_to_finish'
+        ];
+        
+        shifts.forEach((shiftCode, index) => {
+          const shiftDef = SHIFT_DEFINITIONS[shiftCode];
+          const shiftCapacity = locationCount * 2;
+          const isFirstShift = index === 0; // First shift of each weekend gets the blue border
+          const borderStyle = isFirstShift ? 'border-left: 2px solid var(--accent);' : '';
+          
+          // Show date range for multi-day shifts
+          let dateDisplay = '';
+          if (shiftCode === 'shift1_fri_sat') {
+            const friStr = w.friday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const satStr = w.saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            dateDisplay = `${friStr}-${satStr}`;
+          } else if (shiftCode === 'shift3_sat_night') {
+            const satStr = w.saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const sunStr = w.sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            dateDisplay = `${satStr}-${sunStr}`;
+          } else if (shiftCode === 'shift5_2_to_finish') {
+            const sunStr = w.sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const monStr = w.monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            dateDisplay = `${sunStr}-${monStr}`;
+          } else if (shiftCode === 'shift2_sat_afternoon') {
+            dateDisplay = w.saturday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          } else if (shiftCode === 'shift4_sun_morning') {
+            dateDisplay = w.sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          }
+          
+          row2.push(`<th class="th-sub shift-col" scope="col" data-shift="${shiftCode}" title="${shiftDef.name}: ${shiftDef.time}" style="${borderStyle}">
+            <div>${shiftDef.name}</div>
+            <small class="muted">${shiftDef.time}<br>${dateDisplay}<br>0/${shiftCapacity}</small>
+          </th>`);
+        });
+      });
+      row2.push('</tr>');
+
+      el.thead.innerHTML = row1.join('') + row2.join('');
+      
+      // Wire sorting clicks after rendering headers
+      document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', () => setSort(th.getAttribute('data-key')));
+      });
+      
+      // Update sort indicators
+      document.querySelectorAll('th.sortable').forEach(th => {
+        const dir = th.querySelector('.dir');
+        if (!dir) return;
+        const key = th.getAttribute('data-key');
+        dir.textContent = (key === sortState.key) ? (sortState.dir === 'asc' ? '▲' : '▼') : '';
+      });
+    }
+
+    function renderTotalsRow(weekends, colTotals) {
+      const parts = [];
+      parts.push('<tr>');
+      parts.push('<td class="col-list"></td>'); // List #
+      parts.push('<td class="col-name muted" style="font-weight: 700;">Column Totals</td>'); // Name label
+      let grand = 0;
+      
+      weekends.forEach(w => {
+        const shifts = [
+          'shift1_fri_sat',
+          'shift2_sat_afternoon', 
+          'shift3_sat_night',
+          'shift4_sun_morning',
+          'shift5_2_to_finish'
+        ];
+        
+        shifts.forEach((shiftCode, index) => {
+          const total = colTotals.get(shiftCode) || 0;
+          grand += total;
+          const display = total > 0 ? total.toFixed(2).replace(/\.00$/, '') : '';
+          const isFirstShift = index === 0;
+          const borderStyle = isFirstShift ? ' style="border-left: 2px solid var(--accent);"' : '';
+          parts.push(`<td class="col-shift muted right"${borderStyle}>${display}</td>`);
+        });
+      });
+      
+      parts.push(`<td class="col-total right" style="font-weight: 700; border-left: 2px solid var(--success); background: rgba(34,197,94,0.05);">${grand > 0 ? grand.toFixed(2).replace(/\.00$/, '') : ''}</td>`);
+      parts.push('<td class="col-actions"></td>');
+      parts.push('</tr>');
+      
+      el.tfoot.innerHTML = parts.join('');
+    }
+
+    // Removed old updateTableHeaders function - replaced with renderOvertimeHeader
+
+    // Update shift hours function (called from new shift inputs)
+    function updateShiftHours(personId, shiftCode, weekendKey, value) {
+      const normalizedValue = normalizeHours(value);
+      setShiftHours(personId, shiftCode, weekendKey, normalizedValue);
+      
+      // Update Who's Next rankings
+      renderWhosNext();
+    }
+
+    // Update total hours (with adjustment calculation)
+    function updateTotalHours(personId, newTotal) {
+      const normalizedTotal = normalizeHours(newTotal);
+      const currentCalculatedTotal = calculateTotalHours(personId) - (adjustments[personId] || 0);
+      const newAdjustment = normalizedTotal - currentCalculatedTotal;
+      
+      adjustments[personId] = newAdjustment;
+      saveToStorage();
+      
+      // Update the display
+      renderWhosNext();
+    }
+
+    // Add event listeners for shift hour inputs
+    function addTableEventListeners() {
+      el.tbody.addEventListener('input', (e) => {
+        const t = e.target;
+        // Handle shift-based hour inputs
+        if (t && t.matches('input[type="number"][data-person][data-shift]')) {
+          const personId = t.getAttribute('data-person');
+          const shiftCode = t.getAttribute('data-shift');
+          const weekendKey = t.getAttribute('data-weekend');
+          const value = parseFloat(t.value) || 0;
+          
+          updateShiftHours(personId, shiftCode, weekendKey, value);
+        }
+        // Handle row total inputs
+        else if (t && t.matches('input.row-total-input[data-person]')) {
+          const personId = t.getAttribute('data-person');
+          const value = parseFloat(t.value) || 0;
+          updateTotalHours(personId, value);
+        }
+      });
+
+      el.tbody.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        
+        if (action === 'edit' && id) {
+          editWorker(id);
+        } else if (action === 'delete' && id) {
+          deleteWorker(id);
+        }
+      });
+    }
+
+    // Edit worker function (matching live site behavior)
+    function editWorker(workerId) {
+      const worker = workers.find(w => w.id === workerId);
+      if (worker) {
+        // Pre-fill the form for editing
+        document.getElementById('name').value = worker.name;
+        document.getElementById('listNumber').value = worker.listNumber || '';
+        document.getElementById('initialHours').value = calculateTotalHours(worker.id) || '';
+        
+        // Change form state to edit mode
+        document.getElementById('saveBtn').textContent = 'Save';
+        document.getElementById('cancelEditBtn').style.display = 'inline-flex';
+        
+        // Store the ID being edited
+        document.getElementById('addForm').dataset.editingId = workerId;
+        
+        // Focus on name field for editing
+        document.getElementById('name').focus();
+      }
+    }
+
+    // Delete worker function
+    function deleteWorker(workerId) {
+      const worker = workers.find(w => w.id === workerId);
+      if (worker && confirm(`Are you sure you want to delete ${worker.name}?`)) {
+        // Remove worker from workers array
+        workers = workers.filter(w => w.id !== workerId);
+        
+        // Clean up their hours data
+        delete hoursData[workerId];
+        delete adjustments[workerId];
+        
+        // Clean up shift hours with live site compatible format
+        const shiftHoursKey = `shift-hours-v1`;
+        let shiftHours = {};
+        try {
+          shiftHours = JSON.parse(localStorage.getItem(shiftHoursKey) || '{}');
+        } catch(_) {}
+        
+        // Remove all shift hours for this worker
+        Object.keys(shiftHours).forEach(personKey => {
+          if (personKey.startsWith(workerId + '_')) {
+            delete shiftHours[personKey];
+          }
+        });
+        
+        try {
+          localStorage.setItem(shiftHoursKey, JSON.stringify(shiftHours));
+        } catch(_) {}
+        
+        saveToStorage();
+        renderAll();
+        
+        // Update entry count
+        document.querySelector('.panel .head .pill').textContent = `${workers.length} entries`;
+      }
+    }
+
+    // ==== Who's Next panel (shift-aware live ranking) ====
+    function renderWhosNext() {
+      const currentWeekendKey = getCurrentWeekendKey();
+      const container = document.getElementById('wnList');
+      
+      // Update month pill
+      const wnMonthPill = document.getElementById('wnMonthPill');
+      if (wnMonthPill) {
+        const year = parseInt(currentMonth.split('-')[0]);
+        const month = parseInt(currentMonth.split('-')[1]);
+        wnMonthPill.textContent = new Date(year, month-1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      }
+      
+      const query = (wnSearchQuery || '').trim().toLowerCase();
+      
+      // Filter and rank workers
+      const ranked = workers.map(p => {
+        const total = calculateTotalHours(p.id);
+        const excluded = isPersonExcluded(p.id, currentWeekendKey);
+        const weekendHours = getPersonWeekendHours(p.id, currentWeekendKey);
+        
+        return { 
+          id: p.id, 
+          name: p.name || '', 
+          lis: p.listNumber || '', 
+          total, 
+          excluded,
+          weekendHours,
+          eligible: !excluded // Simple eligibility for now
+        };
+      }).filter(r => {
+        // Filter by search query
+        if (query && !(r.name.toLowerCase().includes(query) || String(r.lis).toLowerCase().includes(query))) {
+          return false;
+        }
+        return true;
+      }).sort((a,b) => {
+        // Sort eligible people first
+        if (a.eligible && !b.eligible) return -1;
+        if (!a.eligible && b.eligible) return 1;
+        
+        // Then by total hours (least first)
+        if (a.total !== b.total) return a.total - b.total;
+        
+        // Then by list number
+        const an = Number(a.lis), bn = Number(b.lis);
+        if (!Number.isNaN(an) && !Number.isNaN(bn) && an !== bn) return an - bn;
+        
+        return a.name.localeCompare(b.name);
+      });
+
+      const frag = document.createDocumentFragment();
+      ranked.forEach((r, i) => {
+        const row = document.createElement('div');
+        row.className = `wn-item ${!r.eligible ? 'ineligible' : ''}`;
+        
+        // Get active shifts for the current weekend/location
+        const activeShifts = getActiveShiftsForWeekend(currentWeekendKey);
+        const shiftsHtml = activeShifts.length === 0 
+          ? '<div class="shifts-empty">No shifts configured</div>'
+          : activeShifts.map(shift => {
+              const acceptState = getAcceptOTButtonState(r.id, shift.code, currentWeekendKey);
+              const refusalState = getRefusalButtonState(r.id, shift.code, currentWeekendKey);
+              
+              const remainingBadge = shift.remaining > 0 && shift.remaining < shift.capacity
+                ? `<span class="shift-badge">${shift.remaining}</span>`
+                : '';
+              
+              return `
+                <div class="shift-btn-group">
+                  <button 
+                    class="accept-ot-btn ${acceptState.cssClass}" 
+                    data-person-id="${r.id}" 
+                    data-shift-code="${shift.code}"
+                    data-weekend-key="${currentWeekendKey}"
+                    data-action="accept-ot"
+                    title="${acceptState.title}"
+                    ${acceptState.disabled ? 'disabled' : ''}
+                  >
+                    ${acceptState.state === 'assigned' ? `✓ ${shift.shortDisplay}` : `Accept ${shift.shortDisplay}`}${acceptState.state === 'available' ? remainingBadge : ''}
+                  </button>
+                  <button 
+                    class="${refusalState.cssClass}" 
+                    data-person-id="${r.id}" 
+                    data-shift-code="${shift.code}"
+                    data-weekend-key="${currentWeekendKey}"
+                    data-action="refuse"
+                    title="${refusalState.title}"
+                    ${refusalState.disabled ? 'disabled' : ''}
+                  >
+                    ${refusalState.state === 'refused' ? `✗ ${shift.shortDisplay}` : `Refuse ${shift.shortDisplay}`}
+                  </button>
+                </div>
+              `;
+            }).join('');
+        
+        row.innerHTML = `
+          <div class="wn-rank" title="Rank">${i+1}</div>
+          <div class="wn-main">
+            <div class="wn-left">
+              <div class="wn-text">
+                <div class="wn-name" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</div>
+                <div class="wn-meta">${escapeHtml(r.lis)}</div>
+              </div>
+            </div>
+            <div class="wn-right">
+              <div class="num" title="Cumulative hours across all months">${displayHours(r.total)} hrs total</div>
+              <div class="weekend-hours">${r.weekendHours}h this weekend</div>
+              ${!r.eligible ? `<div class="ineligible-reason">Excluded for this weekend</div>` : ''}
+            </div>
+          </div>
+          <div class="wn-buttons">
+            ${r.excluded ? 
+              `<button class="wn-btn secondary restore-person" data-person-id="${r.id}" title="Restore to Who's Next list">
+                Restore
+              </button>` :
+              `<button class="wn-btn not-here" data-person-id="${r.id}" data-action="nothere" title="Mark as not available for this weekend">Not Here</button>`
+            }
+          </div>
+          <div class="wn-shifts">
+            ${shiftsHtml}
+          </div>
+        `;
+        
+        // Add click-to-scroll on the main area
+        const mainArea = row.querySelector('.wn-main');
+        mainArea.style.cursor = 'pointer';
+        mainArea.addEventListener('click', () => scrollToPerson(r.id));
+        
+        frag.appendChild(row);
+      });
+      
+      container.replaceChildren(frag);
+    }
+
+    // Calculate hours for current month only
+    function calculateCurrentMonthHours(personId) {
+      const year = parseInt(currentMonth.split('-')[0]);
+      const month = parseInt(currentMonth.split('-')[1]);
+      const personHours = hoursData[personId] || {};
+      
+      let monthTotal = 0;
+      Object.keys(personHours).forEach(dateStr => {
+        const date = new Date(dateStr);
+        if (date.getFullYear() === year && date.getMonth() + 1 === month) {
+          monthTotal += personHours[dateStr];
+        }
+      });
+      
+      return monthTotal;
+    }
+
+    // Shift assignment system
+    let shiftAssignments = {
+      'fri-10p-sat-2p': [],
+      'sat-2p-10p': [],
+      'sat-10p-sun-6a': [],
+      'sun-6a-2p': [],
+      '2-to-finish': []
+    };
+    
+    // Update weekend status display
+    function updateWeekendStatus() {
+      const shiftCapacity = locationCount * 2; // 2 people per location per shift
+      const totalPositions = Object.keys(shiftAssignments).length * shiftCapacity;
+      const totalAssigned = Object.values(shiftAssignments).reduce((sum, assignments) => sum + assignments.length, 0);
+      const percentage = totalPositions > 0 ? Math.round((totalAssigned / totalPositions) * 100) : 0;
+      
+      // Update progress text and bar
+      document.getElementById('progressText').textContent = `${totalAssigned}/${totalPositions} positions filled (${percentage}%)`;
+      document.getElementById('progressBar').style.width = `${percentage}%`;
+      
+      // Update individual shift counters
+      const statusItems = document.querySelectorAll('.shift-status-item');
+      const shiftKeys = Object.keys(shiftAssignments);
+      
+      statusItems.forEach((item, index) => {
+        if (shiftKeys[index]) {
+          const shiftKey = shiftKeys[index];
+          const assigned = shiftAssignments[shiftKey].length;
+          const counter = item.querySelector('.shift-counter');
+          
+          if (counter) {
+            counter.textContent = `${assigned}/${shiftCapacity}`;
+            
+            // Color coding based on fill status
+            if (assigned >= shiftCapacity) {
+              counter.style.color = 'var(--success)';
+              counter.style.fontWeight = '700';
+            } else if (assigned > 0) {
+              counter.style.color = 'var(--accent)';
+              counter.style.fontWeight = '600';
+            } else {
+              counter.style.color = 'var(--muted)';
+              counter.style.fontWeight = '600';
+            }
+          }
+        }
+      });
+      
+      // Update location capacity info
+      document.getElementById('shiftCapacity').textContent = `${shiftCapacity} people`;
+      document.getElementById('totalCapacity').textContent = `${totalPositions} people`;
+    }
+
+    // Accept specific shift function
+    function acceptShift(workerId, shiftKey) {
+      const worker = workers.find(w => w.id === workerId);
+      if (worker) {
+        const shiftCapacity = locationCount * 2;
+        
+        // Check if shift has capacity
+        if (shiftAssignments[shiftKey].length < shiftCapacity) {
+          // Check if worker is already assigned to this shift
+          const alreadyAssigned = shiftAssignments[shiftKey].find(assignment => assignment.workerId === workerId);
+          
+          if (!alreadyAssigned) {
+            shiftAssignments[shiftKey].push({
+              workerId: worker.id,
+              workerName: worker.name,
+              listNumber: worker.listNumber
+            });
+            
+            updateWeekendStatus();
+            console.log(`${worker.name} accepted ${shiftKey.replace(/-/g, ' ')} shift!`);
+          } else {
+            console.log(`${worker.name} is already assigned to this shift.`);
+          }
+        } else {
+          console.log(`${shiftKey.replace(/-/g, ' ')} shift is full!`);
+        }
+      }
+    }
+
+    // Refuse specific shift function
+    function refuseShift(workerId, shiftKey) {
+      const worker = workers.find(w => w.id === workerId);
+      if (worker) {
+        // Remove from shift if assigned
+        const assignmentIndex = shiftAssignments[shiftKey].findIndex(assignment => assignment.workerId === workerId);
+        if (assignmentIndex > -1) {
+          shiftAssignments[shiftKey].splice(assignmentIndex, 1);
+          updateWeekendStatus();
+          console.log(`${worker.name} removed from ${shiftKey.replace(/-/g, ' ')} shift.`);
+        } else {
+          console.log(`${worker.name} refused ${shiftKey.replace(/-/g, ' ')} shift.`);
+        }
+      }
+    }
+    
+    // Location count update functionality
+    document.getElementById('updateLocationBtn').addEventListener('click', function() {
+      const newCount = parseInt(document.getElementById('locationCountInput').value) || DEFAULT_LOCATION_COUNT;
+      const oldCount = locationCount;
+      updateLocationCount(newCount);
+      updateWeekendStatus();
+      
+      // Show success message matching live site
+      const shiftCapacity = locationCount * 2;
+      const totalCapacity = Object.keys(shiftDefinitions).length * locationCount * 2;
+      const message = `Location count updated to ${locationCount}!\n\n` +
+                     `Per-shift capacity: ${shiftCapacity} people (${locationCount} locations × 2 people each)\n` +
+                     `Total weekend capacity: ${totalCapacity} people (5 shifts × ${locationCount} locations × 2 people each)\n\n` +
+                     `Each shift can now accommodate ${shiftCapacity} people across ${locationCount} location(s).`;
+      
+      alert(message);
+      console.log('✅ Location count updated:', oldCount, '→', locationCount);
+    });
+
+    // Search functionality (matching live site behavior)
+    document.getElementById('search').addEventListener('input', function(e) {
+      searchQuery = e.target.value;
+      render(); // Re-render with filter applied
+    });
+
+    // Who's Next search
+    document.getElementById('wnSearch').addEventListener('input', function(e) {
+      wnSearchQuery = e.target.value;
+      renderWhosNext();
+    });
+
+    // Add/Edit worker functionality (matching live site behavior)
+    document.getElementById('addForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const name = normalize(document.getElementById('name').value);
+      const listNumber = normalize(document.getElementById('listNumber').value);
+      const initialHours = parseFloat(document.getElementById('initialHours').value) || 0;
+      const editingId = this.dataset.editingId;
+      
+      // Validate required fields
+      if (!name) {
+        alert('Please enter a name.');
+        document.getElementById('name').focus();
+        return;
+      }
+      
+      // Validate hours if provided
+      if (initialHours < 0) {
+        alert('Hours cannot be negative.');
+        document.getElementById('initialHours').focus();
+        return;
+      }
+      
+      // Prevent numbers-only names
+      if (/^\d+$/.test(name)) {
+        alert('Name cannot be just numbers. Please enter a proper name.');
+        document.getElementById('name').focus();
+        return;
+      }
+      
+      // Prevent date fragments in name
+      const nameLower = name.toLowerCase();
+      if (nameLower.includes('fri') || nameLower.includes('sat') || 
+          nameLower.includes('sun') || nameLower.includes('mon') ||
+          /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/.test(nameLower)) {
+        alert('Name contains invalid date text. Please enter a proper name.');
+        document.getElementById('name').focus();
+        return;
+      }
+      
+      // Check for duplicate name
+      const duplicateName = workers.find(w => 
+        w.name.toLowerCase() === name.toLowerCase() && w.id !== editingId
+      );
+      if (duplicateName) {
+        const cont = confirm(`Name "${name}" already exists. Add anyway?`);
+        if (!cont) return;
+      }
+      
+      // Optional: warn on duplicate LIS number if provided
+      if (listNumber) {
+        const dupLis = workers.find(w => 
+          (w.listNumber || '').toLowerCase() === listNumber.toLowerCase() && w.id !== editingId
+        );
+        if (dupLis) {
+          const cont2 = confirm(`List # "${listNumber}" already exists for "${dupLis.name}". Add anyway?`);
+          if (!cont2) return;
+        }
+      }
+      
+      const now = new Date().toISOString();
+      
+      if (editingId) {
+        // Edit existing worker
+        const worker = workers.find(w => w.id === editingId);
+        if (worker) {
+          worker.name = name;
+          worker.listNumber = listNumber;
+          worker.updatedAt = now;
+          
+          // Update hours if provided during edit
+          if (initialHours > 0) {
+            const currentTotal = calculateTotalHours(worker.id);
+            const adjustment = normalizeHours(initialHours) - currentTotal;
+            
+            if (adjustment !== 0) {
+              if (!adjustments[worker.id]) adjustments[worker.id] = 0;
+              adjustments[worker.id] += adjustment;
+            }
+          }
+          
+          // Reset form to add mode
+          document.getElementById('saveBtn').textContent = 'Add';
+          document.getElementById('cancelEditBtn').style.display = 'none';
+          delete this.dataset.editingId;
+        }
+      } else {
+        // Add new worker
+        const newWorker = {
+          id: generateId(),
+          name: name,
+          listNumber: listNumber,
+          createdAt: now,
+          updatedAt: now
+        };
+        
+        workers.push(newWorker);
+        
+        // Set initial hours if provided
+        if (initialHours > 0) {
+          adjustments[newWorker.id] = normalizeHours(initialHours);
+        }
+      }
+      
+      saveToStorage();
+      renderAll();
+      
+      // Clear form
+      this.reset();
+      document.getElementById('name').focus();
+    });
+
+    // Clear all functionality (matching live site behavior)
+    document.getElementById('clearAllBtn').addEventListener('click', function() {
+      if (!workers.length) return;
+      if (!confirm('Clear ALL entries? This cannot be undone.')) return;
+      
+      workers = [];
+      hoursData = {};
+      shiftHours = {};
+      adjustments = {};
+      excluded = {};
+      shifts = {};
+      refusals = {};
+      searchFilter = ''; // Clear search filter
+      wnSearchQuery = ''; // Clear Who's Next search
+      
+      // Clear localStorage
+      try {
+        localStorage.removeItem(STORAGE_KEYS.entries);
+        localStorage.removeItem(STORAGE_KEYS.hours);
+        localStorage.removeItem('shift-hours-v1'); // Use literal key like live site
+        localStorage.removeItem(STORAGE_KEYS.adjustments);
+        localStorage.removeItem(EXCLUDED_KEY);
+        localStorage.removeItem(SHIFTS_KEY);
+        localStorage.removeItem(REFUSALS_KEY);
+        localStorage.removeItem(LOCATION_CONFIG_KEY);
+        
+        // Clear all lastChange entries
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith(STORAGE_KEYS.lastChange + '::')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (e) {
+        console.error('Error clearing localStorage:', e);
+      }
+      
+      // Reset location count to default
+      locationCount = DEFAULT_LOCATION_COUNT;
+      
+      // Clear any edit state and search inputs
+      clearForm();
+      document.getElementById('search').value = '';
+      document.getElementById('wnSearch').value = '';
+      
+      renderAll();
+      updateWeekendStatus();
+    });
+
+    // Month picker functionality
+    document.getElementById('monthPicker').addEventListener('change', function(e) {
+      currentMonth = e.target.value;
+      const selectedDate = new Date(currentMonth + '-01');
+      const monthName = selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      
+      document.getElementById('tableMonthPill').textContent = monthName;
+      document.getElementById('wnMonthPill').textContent = `${monthName} Rankings`;
+      
+      // Re-render table with new month data
+      render();
+      renderWhosNext();
+    });
+
+    // Cancel edit functionality (matching live site behavior)
+    document.getElementById('cancelEditBtn').addEventListener('click', function() {
+      clearForm();
+    });
+    
+    // Clear form function (matching live site behavior)
+    function clearForm() {
+      document.getElementById('addForm').reset();
+      document.getElementById('saveBtn').textContent = 'Add';
+      document.getElementById('cancelEditBtn').style.display = 'none';
+      delete document.getElementById('addForm').dataset.editingId;
+    }
+
+    // Main rendering function
+    function renderAll() {
+      // Update current month weekends
+      const year = parseInt(currentMonth.split('-')[0]);
+      const month = parseInt(currentMonth.split('-')[1]);
+      currentWeekends = getWeekendDates(year, month);
+      
+      // Update month display
+      if (el.tableMonthPill) {
+        const monthLabel = new Date(year, month-1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        el.tableMonthPill.textContent = monthLabel;
+      }
+      
+      render(); // Use the new render function
+      renderWhosNext();
+      updateWeekendStatus();
+      
+      // Update entry count
+      document.querySelector('.panel .head .pill').textContent = `${workers.length} entries`;
+    }
+    
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load data from localStorage
+      loadFromStorage();
+      
+      // Load location configuration
+      locationCount = loadLocationConfig();
+      
+      // Add demo data if no workers exist
+      if (workers.length === 0) {
+        const demoWorkers = [
+          { name: 'John Smith', listNumber: '001', hours: 120 },
+          { name: 'Jane Doe', listNumber: '002', hours: 95 },
+          { name: 'Mike Johnson', listNumber: '003', hours: 87 },
+          { name: 'Sarah Wilson', listNumber: '004', hours: 156 },
+          { name: 'David Brown', listNumber: '005', hours: 78 },
+          { name: 'Lisa Anderson', listNumber: '006', hours: 134 },
+          { name: 'Robert Taylor', listNumber: '007', hours: 102 },
+          { name: 'Emily Davis', listNumber: '008', hours: 67 },
+          { name: 'Michael Miller', listNumber: '009', hours: 189 },
+          { name: 'Jessica Garcia', listNumber: '010', hours: 45 },
+          { name: 'Christopher Martinez', listNumber: '011', hours: 167 },
+          { name: 'Amanda Rodriguez', listNumber: '012', hours: 89 },
+          { name: 'Daniel Williams', listNumber: '013', hours: 143 },
+          { name: 'Ashley Thompson', listNumber: '014', hours: 72 },
+          { name: 'James White', listNumber: '015', hours: 198 },
+          { name: 'Nicole Lopez', listNumber: '016', hours: 56 },
+          { name: 'Kevin Lee', listNumber: '017', hours: 178 },
+          { name: 'Stephanie Clark', listNumber: '018', hours: 91 },
+          { name: 'Ryan Lewis', listNumber: '019', hours: 124 },
+          { name: 'Lauren Hall', listNumber: '020', hours: 83 },
+          { name: 'Brandon Walker', listNumber: '021', hours: 145 },
+          { name: 'Megan Young', listNumber: '022', hours: 76 },
+          { name: 'Justin Allen', listNumber: '023', hours: 162 },
+          { name: 'Rachel King', listNumber: '024', hours: 68 },
+          { name: 'Tyler Scott', listNumber: '025', hours: 187 }
+        ];
+        
+        const currentWeekendKey = getCurrentWeekendKey();
+        
+        demoWorkers.forEach((demo, index) => {
+          const worker = {
+            id: generateId(),
+            name: demo.name,
+            listNumber: demo.listNumber,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          workers.push(worker);
+          
+          // Set realistic total hours with some variation
+          adjustments[worker.id] = normalizeHours(demo.hours);
+          
+          // Add some shift hours for the current weekend to make it realistic
+          if (!shiftHours[worker.id]) shiftHours[worker.id] = {};
+          if (!shiftHours[worker.id][currentWeekendKey]) shiftHours[worker.id][currentWeekendKey] = {};
+          
+          // Add current weekend hours for some people (40% chance)
+          if (Math.random() > 0.6) {
+            const shiftCodes = Object.keys(SHIFT_DEFINITIONS);
+            const numShifts = Math.floor(Math.random() * 3) + 1; // 1-3 shifts
+            
+            for (let s = 0; s < numShifts; s++) {
+              const randomShift = shiftCodes[Math.floor(Math.random() * shiftCodes.length)];
+              if (!shiftHours[worker.id][currentWeekendKey][randomShift]) {
+                const baseHours = SHIFT_DEFINITIONS[randomShift].hours;
+                // Add some realistic variation: 0.75x to 1.25x base hours
+                const multiplier = 0.75 + (Math.random() * 0.5);
+                const actualHours = Math.max(4, Math.min(20, baseHours * multiplier));
+                shiftHours[worker.id][currentWeekendKey][randomShift] = normalizeHours(actualHours);
+              }
+            }
+          }
+          
+          // Add some current weekend shift assignments for testing (25% of people)
+          if (Math.random() > 0.75) {
+            if (!shifts[currentWeekendKey]) shifts[currentWeekendKey] = {};
+            if (!shifts[currentWeekendKey][worker.id]) shifts[currentWeekendKey][worker.id] = {};
+            
+            const shiftCodes = Object.keys(SHIFT_DEFINITIONS);
+            const randomShift = shiftCodes[Math.floor(Math.random() * shiftCodes.length)];
+            
+            // Check capacity before assigning to prevent overcrowding
+            const assignedCount = getShiftAssignedCount(randomShift, currentWeekendKey);
+            const capacity = getShiftCapacity(randomShift);
+            
+            if (assignedCount < capacity) {
+              shifts[currentWeekendKey][worker.id][randomShift] = { 
+                assigned: true, 
+                timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString() // Random time in last 24h
+              };
+            }
+          }
+          
+          // Add some refusals for testing (12% of people)
+          if (Math.random() > 0.88) {
+            if (!refusals[currentWeekendKey]) refusals[currentWeekendKey] = {};
+            if (!refusals[currentWeekendKey][worker.id]) refusals[currentWeekendKey][worker.id] = {};
+            
+            const shiftCodes = Object.keys(SHIFT_DEFINITIONS);
+            const randomShift = shiftCodes[Math.floor(Math.random() * shiftCodes.length)];
+            refusals[currentWeekendKey][worker.id][randomShift] = { 
+              refused: true, 
+              worked: Math.random() > 0.7, // 30% chance they worked it anyway
+              timestamp: new Date(Date.now() - Math.random() * 172800000).toISOString() // Random time in last 48h
+            };
+          }
+          
+          // Exclude a few people for testing (8% chance)
+          if (Math.random() > 0.92) {
+            if (!excluded[currentWeekendKey]) excluded[currentWeekendKey] = {};
+            const reasons = ['Not available this weekend', 'On vacation', 'Sick leave', 'Personal leave'];
+            const randomReason = reasons[Math.floor(Math.random() * reasons.length)];
+            excluded[currentWeekendKey][worker.id] = randomReason;
+          }
+        });
+        
+        console.log(`✅ Added ${demoWorkers.length} demo workers with realistic hours and shift data`);
+        console.log(`📊 Generated data for weekend: ${currentWeekendKey}`);
+        saveToStorage();
+      }
+      
+      // Set current month
+      const now = new Date();
+      currentMonth = now.toISOString().slice(0, 7);
+      document.getElementById('monthPicker').value = currentMonth;
+      document.getElementById('tableMonthPill').textContent = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      document.getElementById('wnMonthPill').textContent = `${now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} Rankings`;
+      
+      // Initialize location count
+      document.getElementById('locationCountInput').value = locationCount;
+      
+      // Add table event listeners
+      addTableEventListeners();
+      
+      // Add Who's Next event listeners
+      addWhosNextEventListeners();
+      
+      // Render all components
+      renderAll();
+      
+      console.log('OT-MTA loaded with', workers.length, 'workers');
+      console.log('Current month:', currentMonth);
+      console.log('Location count:', locationCount);
+    });
+    
+    // ======= IMPORT/EXPORT FUNCTIONALITY =======
+    
+    // Export data as JSON
+    function exportJSON() {
+      const exportData = {
+        version: '1.0',
+        timestamp: new Date().toISOString(),
+        workers,
+        hoursData,
+        adjustments,
+        locationCount,
+        currentMonth
+      };
+      
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `otmta-data-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    // Export data as CSV
+    function exportCSV() {
+      const headers = ['Name', 'List Number', 'Total Hours', 'Created At', 'Updated At'];
+      const rows = workers.map(worker => [
+        worker.name,
+        worker.listNumber || '',
+        calculateTotalHours(worker.id),
+        worker.createdAt || '',
+        worker.updatedAt || ''
+      ]);
+      
+      const csvContent = [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+        .join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `otmta-workers-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    // Import data from file
+    function importData(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          
+          if (file.name.endsWith('.json')) {
+            const importData = JSON.parse(content);
+            
+            if (importData.workers && Array.isArray(importData.workers)) {
+              if (confirm(`Import ${importData.workers.length} workers? This will replace all current data.`)) {
+                workers = importData.workers.map(worker => ({
+                  ...worker,
+                  id: worker.id || generateId(),
+                  createdAt: worker.createdAt || new Date().toISOString(),
+                  updatedAt: worker.updatedAt || new Date().toISOString()
+                }));
+                
+                hoursData = importData.hoursData || {};
+                adjustments = importData.adjustments || {};
+                locationCount = importData.locationCount || 1;
+                
+                if (importData.currentMonth) {
+                  currentMonth = importData.currentMonth;
+                  document.getElementById('monthPicker').value = currentMonth;
+                }
+                
+                saveToStorage();
+                renderAll();
+                console.log('JSON import successful');
+              }
+            } else {
+              throw new Error('Invalid JSON format');
+            }
+          } else if (file.name.endsWith('.csv')) {
+            const lines = content.split('\n').filter(line => line.trim());
+            if (lines.length < 2) throw new Error('CSV must have at least a header and one data row');
+            
+            const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, ''));
+            const nameIndex = headers.findIndex(h => h.toLowerCase().includes('name'));
+            const listIndex = headers.findIndex(h => h.toLowerCase().includes('list'));
+            const hoursIndex = headers.findIndex(h => h.toLowerCase().includes('hour'));
+            
+            if (nameIndex === -1) throw new Error('CSV must have a name column');
+            
+            const importWorkers = [];
+            for (let i = 1; i < lines.length; i++) {
+              const values = lines[i].split(',').map(v => v.replace(/^"|"$/g, ''));
+              const name = values[nameIndex]?.trim();
+              
+              if (name) {
+                const worker = {
+                  id: generateId(),
+                  name,
+                  listNumber: listIndex >= 0 ? values[listIndex]?.trim() || '' : '',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                };
+                
+                importWorkers.push(worker);
+                
+                // Set initial hours if provided
+                if (hoursIndex >= 0 && values[hoursIndex]) {
+                  const hours = parseFloat(values[hoursIndex]);
+                  if (hours > 0) {
+                    adjustments[worker.id] = normalizeHours(hours);
+                  }
+                }
+              }
+            }
+            
+            if (confirm(`Import ${importWorkers.length} workers from CSV? This will replace all current data.`)) {
+              workers = importWorkers;
+              saveToStorage();
+              renderAll();
+              console.log('CSV import successful');
+            }
+          } else {
+            throw new Error('Unsupported file format');
+          }
+        } catch (error) {
+          alert(`Import failed: ${error.message}`);
+          console.error('Import error:', error);
+        }
+      };
+      reader.readAsText(file);
+    }
+    
+    // Import/Export event listeners
+    document.getElementById('exportCsvBtn').addEventListener('click', function() {
+      exportCSV();
+    });
+    
+    document.getElementById('exportJsonBtn').addEventListener('click', function() {
+      exportJSON();
+    });
+    
+    document.getElementById('importBtn').addEventListener('click', function() {
+      document.getElementById('importFile').click();
+    });
+    
+    document.getElementById('importFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        importData(file);
+        e.target.value = ''; // Clear the input
+      }
+    });
+    
+    // Global functions for console debugging
+    window.otmta = {
+      workers,
+      hoursData,
+      adjustments,
+      exportJSON,
+      exportCSV,
+      addTestWorker: function(name, listNum, hours) {
+        const worker = {
+          id: generateId(),
+          name: name || 'Test Worker',
+          listNumber: listNum || '999',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        workers.push(worker);
+        if (hours) adjustments[worker.id] = hours;
+        saveToStorage();
+        renderAll();
+        return worker;
+      }
+    };
+  </script>
+</body>
+</html>
