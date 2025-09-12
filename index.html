@@ -2549,11 +2549,11 @@
       personData.chargeableHours += shift.chargeableHours;
       personData.lastShiftEnd = shiftDates.end;
       
-      // Add hours to the main hours tracking system for table display
-      const newShiftData = personData.shifts[personData.shifts.length - 1];
-      console.log('🟣 About to call addHoursForShift from assignShift');
-      console.log('   New Shift Data:', newShiftData);
-      addHoursForShift(personId, newShiftData, weekendKey);
+      // Add hours to the shift-specific system so they appear in table cells  
+      setShiftHours(personId, shiftCode, weekendKey, shift.chargeableHours);
+      console.log(`   ✅ Added ${shift.chargeableHours}h to shift system for table display`);
+      
+      // Note: We do NOT call addHoursForShift() to avoid double-counting in effectiveTotal()
       
       saveShifts();
       
@@ -2660,10 +2660,6 @@
       
       console.log(`   After adding hours, state.hours[${personId}]:`, state.hours[personId]);
       
-      // CRITICAL: Also save hours to the shift-specific system that the main table reads from
-      setShiftHours(personId, shiftData.shiftCode, weekendKey, shift.chargeableHours);
-      console.log(`   ✅ Also saved ${shift.chargeableHours}h to shift system for ${shiftData.shiftCode}`);
-      
       saveHours();
       return true;
     }
@@ -2698,10 +2694,6 @@
           }
         }
       }
-      
-      // CRITICAL: Also remove hours from the shift-specific system that the main table reads from
-      setShiftHours(personId, shiftData.shiftCode, weekendKey, 0);
-      console.log(`   ✅ Also removed hours from shift system for ${shiftData.shiftCode}`);
       
       saveHours();
       return true;
