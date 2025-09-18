@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Pass List — Names & Numbers</title>
   <style>
-    :root { 
+    :root {
       --bg:#0c1117; --panel:#0f1621; --muted:#7b869a; --text:#eaf1ff; --border:rgba(255,255,255,0.08); --accent:#60a5fa; --success:#22c55e; --danger:#ef4444; --shadow:0 10px 30px rgba(0,0,0,0.35); --ok:#22c55e; --r:14px; --pad:16px; --gap:16px; --gap-lg:24px; --w-list:70px; --w-name:180px; --w-pass:120px; --table-bg:#0f1621; --thead-bg:rgba(15,22,33,.96); --border-col:rgba(255,255,255,.08);
       
       /* Mobile-specific variables */
@@ -97,75 +97,81 @@
     tfoot td { padding: 10px 8px; font-weight: 700; font-size: 0.95rem; border-top: 1px solid var(--border); }
     tbody tr { transition: background-color 0.15s ease; }
     tbody tr:hover { background: rgba(59,130,246,.08); }
-    /* Remove zebra striping for calmer grid */
     th.sortable { cursor: pointer; }
     th.sortable .dir { margin-left:6px; opacity:.7; font-size:11px; }
     .muted { color: var(--muted); }
     .right { text-align:right; }
-    /* Sticky left columns */
-    thead .sticky-col, tbody .sticky-col, tfoot .sticky-col { position: sticky; background: var(--table-bg); z-index: 20; box-shadow: 1px 0 0 0 var(--border) inset; contain: paint; }
-    thead .sticky-col { z-index: 25; contain: paint; background: var(--thead-bg); }
-    /* Shorten the main table with an internal scroll area so
-       you can always see a subset of rows and horizontally
-       scroll to reveal the remaining dates */
-    /* Show all names vertically; horizontal scroll for dates; no inner side gutters */
+    /* Sticky left columns - List # and Name */
+    .ot-table .col-list {
+      position: sticky;
+      left: 0;
+      background: var(--panel);
+      z-index: 25;
+      box-shadow: 1px 0 0 0 var(--border) inset;
+    }
+
+    .ot-table .col-name {
+      position: sticky;
+      left: 60px; /* Width of list number column */
+      background: var(--panel);
+      z-index: 25;
+      box-shadow: 1px 0 0 0 var(--border) inset;
+    }
+
+    /* Header sticky positioning */
+    .ot-table thead .col-list {
+      background: var(--thead-bg);
+      z-index: 30; /* Higher than body cells */
+    }
+
+    .ot-table thead .col-name {
+      background: var(--thead-bg);
+      z-index: 30;
+    }
+
+    /* Footer sticky positioning */
+    .ot-table tfoot .col-list,
+    .ot-table tfoot .col-name {
+      background: var(--panel);
+      z-index: 25;
+    }
+    /* Utility styling */
     .scrollwrap { position: relative; overflow-x: auto; overflow-y: visible; width: 100%; margin: 0; }
-    /* Table scroll container - allow horizontal scrolling while sticky columns stay fixed */
     .table-scroll { overflow-x: auto; overflow-y: auto; margin: 0; padding: 0; width: 100%; max-height: 75vh; }
     .collapsible[data-collapsed="true"] .body { display:none; }
     .caret { transform: rotate(0deg); transition: transform .15s ease; }
     .collapsible[data-collapsed="true"] .caret { transform: rotate(-90deg); }
-    /* Sticky right column (Row Total) */
-    .sticky-right-total, .sticky-right-actions{ position: sticky; background: var(--table-bg); box-shadow: -1px 0 0 0 var(--border-col) inset; }
-    .sticky-right-actions{ right: 0; z-index: 12; }
-    .sticky-right-total{ right: 100px; z-index: 12; }
-    thead .sticky-right, tbody .sticky-right, tfoot .sticky-right { position: sticky; right: 0; background: var(--table-bg); z-index: 25; box-shadow: -1px 0 0 0 var(--border) inset; }
-    thead .sticky-right { background: var(--thead-bg); }
     /* Pulse highlight for reveal */
     @keyframes pulse-bg { 0% { background: rgba(96,165,250,.25);} 100% { background: transparent; } }
     .pulse { animation: pulse-bg 1.2s ease-out 1; }
-    /* Col classes only set width; sticky offsets via nth-child rules */
-    .col-list { width: var(--w-list); text-align: center; }
-    .col-name { width: var(--w-name); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .col-pass { width: var(--w-pass); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: monospace; }
-    .num { font-feature-settings: "tnum" 1, "ss01" 1; }
+    /* Main table structure */
     .ot-table { width: 100%; min-width: 1200px; table-layout: auto; border-collapse: separate; border-spacing: 0; position: relative; }
-    .ot-table th, .ot-table td { 
-      padding: 10px 12px; 
-      vertical-align: middle; 
-      white-space: nowrap; 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
-      line-height: 1.25; 
-      word-break: normal; 
-      writing-mode: horizontal-tb !important; 
-      transform: none !important; 
-      letter-spacing: normal !important; 
+    .ot-table th, .ot-table td {
+      padding: 10px 12px;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+      word-break: normal;
       background-clip: padding-box;
       position: relative;
     }
-    .ot-table th, .ot-table td, .name-cell { writing-mode: horizontal-tb !important; transform: none !important; }
-    /* Simple column styling without sticky positioning */
-    .ot-table tr > *:nth-child(1) { 
-      background: var(--table-bg); 
-    }
-    .ot-table tr > *:nth-child(2) { 
-      background: var(--table-bg); 
-    }
-    .ot-table tr > *:nth-child(3) { 
-      background: var(--table-bg); 
-      border-right: 2px solid rgba(96,165,250,0.2) !important;
-    }
+
+    /* Column width classes */
+    .col-list { width: var(--w-list); text-align: center; }
+    .col-name { width: var(--w-name); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .col-pass { width: var(--w-pass); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: monospace; }
+    .col-total { width: 100px; }
+    .col-actions { width: 100px; }
+    .col-shift { width: 80px; }
+
+    /* Day cell styling */
     .day-cell { min-width: 60px; max-width: 80px; }
-    .day-cell > input[type="number"]{ width:100%; box-sizing: border-box; }
-    /* Colgroup-driven widths (locks predictable sizes) */
-    .col-list{ width: var(--w-list); }
-    .col-name{ width: var(--w-name); }
-    .col-pass{ width: var(--w-pass); }
-    .col-total{ width:100px; }
-    .col-actions{ width:100px; }
-    .shifts > col{ width:80px; }
-    .col-shift{ width:80px; }
+    .day-cell > input[type="number"] { width: 100%; box-sizing: border-box; }
+
+    /* Utility classes */
+    .num { font-feature-settings: "tnum" 1, "ss01" 1; }
     /* Header cell stacks without forcing layout weirdness */
     .header-cell{ display:inline-flex; flex-direction:column; align-items:center; gap:2px; }
     .header-cell .dow{ font-size:13px; }
@@ -192,6 +198,22 @@
     }
     .row-total-input { box-sizing: border-box; min-width: 90px; height: 40px; font-size: 1rem; text-align: right; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
     td.row-total { background: rgba(255,255,255,.04); border-radius: 12px; }
+
+    /* Weekend divider styling - applied via JavaScript for perfect alignment */
+    .weekend-separator {
+      border-left: 2px solid var(--accent) !important;
+    }
+
+    .weekend-header {
+      border-left: 2px solid var(--accent) !important;
+      background: rgba(96,165,250,0.05) !important;
+    }
+
+    /* Total column also gets the green divider */
+    .ot-table .col-total {
+      border-left: 2px solid var(--success);
+      background: rgba(34,197,94,0.05);
+    }
     @media (max-width: 1200px){
       .who-rail { position: relative; right: auto; top: auto; width: 100%; margin-top: 20px; }
       .table-card { width: 100%; }
@@ -3366,11 +3388,8 @@
     function executeRefusal(personId, shiftCode, weekendKey, chargeableHours) {
       try {
         console.log('🔄 Executing refusal...');
-        
-        // Add chargeable hours to person's adjustment total (fairness penalty)
-        if (!state.adj[personId]) state.adj[personId] = 0;
-        state.adj[personId] += chargeableHours;
-        saveAdj();
+
+        // Note: Penalty hours are tracked via shift-hours system only (prevents double-counting)
         
         // Record the refusal (prevents re-offering)
         if (!state.refusals[weekendKey]) state.refusals[weekendKey] = {};
@@ -3388,34 +3407,18 @@
         // CRITICAL: Also add penalty hours to shift-specific system so they appear in main table shift cells
         // Use special refusal function that doesn't mark as "worked"
         setRefusalPenaltyHours(personId, shiftCode, weekendKey, chargeableHours);
-        console.log(`   ✅ Also added ${chargeableHours}h penalty to shift cell for ${shiftCode} (not marked as worked)`);
+        console.log(`   ✅ Added ${chargeableHours}h penalty to shift-hours system for ${shiftCode}`);
+
+        // DEBUG: Check what's in the total now
+        setTimeout(() => {
+          const debugTotal = effectiveTotal(personId);
+          console.log(`   🔍 Total after refusal: ${debugTotal}h`);
+        }, 100);
         
-        // IMPORTANT: Also record the refused shift in the shifts system with worked: false
-        // This ensures the eligibility system knows about refusals and doesn't apply break rules to them
-        const shift = SHIFT_DEFINITIONS[shiftCode];
-        if (shift) {
-          const weekend = getCurrentWeekend();
-          const shiftDates = calculateShiftDates(shift, weekend);
-          
-          // Initialize shifts data if needed
-          if (!state.shifts[weekendKey]) state.shifts[weekendKey] = {};
-          if (!state.shifts[weekendKey][personId]) {
-            state.shifts[weekendKey][personId] = { shifts: [], totalHours: 0, chargeableHours: 0 };
-          }
-          
-          // Add refused shift with worked: false
-          state.shifts[weekendKey][personId].shifts.push({
-            shiftCode,
-            startTime: shiftDates.start,
-            endTime: shiftDates.end,
-            totalHours: shift.totalHours,
-            chargeableHours: shift.chargeableHours,
-            worked: false  // Key difference: this was refused, not worked
-          });
-          
-          saveShifts();
-          console.log(`   ✅ Also recorded refused shift in shifts system with worked: false`);
-        }
+        // Note: Refused shifts are tracked via refusals and shift-hours systems only
+        // We don't add them to the main shifts system to prevent double-counting
+        console.log(`   ✅ Refused shift tracked via refusal and shift-hours systems only (prevents double-counting)`);
+
         
         // Update last change timestamp for ranking tie-breaker
         bumpLastChange(personId);
@@ -4066,7 +4069,7 @@
           </div>`;
       }
       
-      return `<td class="shift-hour-cell${cssClass}" data-person="${personId}" data-shift="${shiftCode}" data-weekend="${currentWeekendKey}">
+      return `<td class="shift-hour-cell${cssClass}${shiftCode === 'shift1_fri_sat' ? ' weekend-separator' : ''}" data-person="${personId}" data-shift="${shiftCode}" data-weekend="${currentWeekendKey}">
         <input type="number" 
                inputmode="decimal" 
                min="0" 
@@ -4466,12 +4469,14 @@
       parts.push('<td class="col-list"></td>'); // List #
       parts.push('<td class="col-name muted" style="font-weight: 700;">Column Totals</td>'); // Name label
       let grand = 0;
-      weekends.forEach(w => {
-        w.days.forEach(day => {
+      weekends.forEach((w, weekendIndex) => {
+        w.days.forEach((day, dayIndex) => {
           const k = dateKey(day.date);
           const v = colTotals.get(k) || 0;
           grand += v;
-          parts.push(`<td class="right muted num" title="Column total: ${v ? v.toFixed(2).replace(/\\.00$/, '') + ' hours' : '0 hours'}">${v ? v.toFixed(2).replace(/\\.00$/, '') : ''}</td>`);
+          const isFirstDayOfWeekend = dayIndex === 0;
+          const weekendSeparatorClass = isFirstDayOfWeekend ? ' weekend-separator' : '';
+          parts.push(`<td class="right muted num${weekendSeparatorClass}" title="Column total: ${v ? v.toFixed(2).replace(/\\.00$/, '') + ' hours' : '0 hours'}">${v ? v.toFixed(2).replace(/\\.00$/, '') : ''}</td>`);
         });
       });
       parts.push(`<td class="right num" title="Month total: ${grand ? grand.toFixed(2) + ' hours for this month only' : '0 hours for this month'}">${grand ? grand.toFixed(2).replace(/\\.00$/, '') : ''}</td>`);
@@ -4811,33 +4816,47 @@
       // Sum ALL hours across ALL dates, not just current month
       let sum = 0;
       const personHours = state.hours[personId] || {};
-      
+
       // Check if migration has been completed
       const migrationCompleted = localStorage.getItem('hours-migration-completed-v1') === 'true';
-      
-      if (migrationCompleted) {
-        // After migration, exclude old date-based hours to prevent double-counting
-        // Only count hours from dates that aren't part of Friday-Monday weekends
-        Object.keys(personHours).forEach(dateKey => {
-          const v = personHours[dateKey];
-          if (typeof v === 'number') {
-            const date = new Date(dateKey + 'T12:00:00');
-            const dayOfWeek = date.getDay(); // 0 = Sunday, 5 = Friday, 6 = Saturday, 1 = Monday
-            
-            // Only count hours from non-weekend days (Tuesday, Wednesday, Thursday)
-            if (dayOfWeek >= 2 && dayOfWeek <= 4) {
-              sum += v;
-            }
-          }
-        });
-      } else {
-        // Before migration, count all hours normally
-        Object.keys(personHours).forEach(dateKey => {
-          const v = personHours[dateKey];
-          if (typeof v === 'number') sum += v;
-        });
+
+      console.log(`baseSum debug for ${personId}:`, {
+        migrationCompleted,
+        totalDateEntries: Object.keys(personHours).length,
+        personHours: personHours
+      });
+
+      // Additional debug to identify specific double-counting scenario
+      if (!migrationCompleted) {
+        console.log(`⚠️ MIGRATION NOT COMPLETED - this could be causing double-counting!`);
       }
-      
+
+      // ALWAYS exclude Friday, Saturday, Sunday, Monday hours to prevent double-counting
+      // The new shift-based system handles ALL Friday-Monday overtime (including refusals)
+      Object.keys(personHours).forEach(dateKey => {
+        const v = personHours[dateKey];
+        if (typeof v === 'number') {
+          const date = new Date(dateKey + 'T12:00:00');
+          const dayOfWeek = date.getDay(); // 0 = Sunday, 5 = Friday, 6 = Saturday, 1 = Monday
+
+          // ONLY count Tuesday, Wednesday, Thursday hours (non-OT days)
+          // This completely prevents double-counting with shift system
+          if (dayOfWeek >= 2 && dayOfWeek <= 4) {
+            sum += v;
+            console.log(`  Including ${dateKey} (${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dayOfWeek]}): ${v} hours - WEEKDAY`);
+          } else {
+            console.log(`  EXCLUDING ${dateKey} (${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dayOfWeek]}): ${v} hours - WEEKEND/MONDAY (shift system handles this)`);
+          }
+        }
+      });
+
+      console.log(`baseSum result for ${personId}: ${sum}`);
+
+      // Special debug for shift1_fri_sat issue
+      if (sum > 0) {
+        console.log(`⚠️ baseSum is ${sum}h for ${personId} - this might be causing double-counting with shift system`);
+      }
+
       return normalizeQuarter(sum);
     }
     
@@ -4878,6 +4897,17 @@
       const base = baseSum(personId); // Legacy hour-based system
       const shiftTotal = calculatePersonShiftTotal(personId); // New shift-based system
       const adj = Number(state.adj[personId] || 0);
+
+      // Debug logging for shift1_fri_sat double-counting issue
+      if (shiftTotal > 0) {
+        console.log(`effectiveTotal debug for ${personId}:`, {
+          baseSum: base,
+          shiftTotal: shiftTotal,
+          adjustments: adj,
+          total: base + shiftTotal + adj
+        });
+      }
+
       return normalizeQuarter(base + shiftTotal + adj);
     }
     // Comparator: same ordering as Who's Next panel (least -> most hours with tie-breakers)
@@ -4977,40 +5007,59 @@
     function calculatePersonShiftTotal(personId){
       let total = 0;
       let refusedButWorkedTotal = 0;
-      
+      let shiftBreakdown = [];
+
       // Sum shift hours across all weekends
       const shiftHoursKey = `shift-hours-v1`;
       let shiftHours = {};
       try {
         shiftHours = JSON.parse(localStorage.getItem(shiftHoursKey) || '{}');
       } catch(_) {}
-      
+
       // Look for all entries for this person across all weekends
       Object.keys(shiftHours).forEach(personWeekendKey => {
         if (personWeekendKey.startsWith(personId + '_')) {
           // Extract weekend key from personWeekendKey (format: personId_weekendKey)
           const weekendKey = personWeekendKey.substring(personId.length + 1);
-          
+
           const personShiftHours = shiftHours[personWeekendKey];
           Object.keys(personShiftHours).forEach(shiftCode => {
             const hours = Number(personShiftHours[shiftCode] || 0);
-            
+
+            // Debug: Track shift breakdown
+            if (hours > 0) {
+              shiftBreakdown.push({
+                shiftCode: shiftCode,
+                weekendKey: weekendKey,
+                hours: hours
+              });
+            }
+
             // Check if this shift was refused but worked
             const refusalDetails = getShiftRefusalDetails(personId, shiftCode, weekendKey);
             if (refusalDetails && refusalDetails.refused && refusalDetails.worked) {
               refusedButWorkedTotal += hours;
             }
-            
+
             total += hours;
           });
         }
       });
-      
+
+      // Debug logging for shift1_fri_sat issue
+      if (total > 0) {
+        console.log(`calculatePersonShiftTotal debug for ${personId}:`, {
+          totalShiftHours: total,
+          shiftBreakdown: shiftBreakdown,
+          refusedButWorked: refusedButWorkedTotal
+        });
+      }
+
       // Optional: Log refused but worked hours for auditing
       if (refusedButWorkedTotal > 0) {
         console.log(`Person ${personId} has ${refusedButWorkedTotal}h from refused-but-worked shifts`);
       }
-      
+
       return total;
     }
 
@@ -5863,7 +5912,7 @@
       row1.push('<th class="sortable col-list" scope="col" data-key="lisNumber" rowspan="2" title="List number for sorting">List # <span class="dir"></span></th>');
       row1.push('<th class="sortable col-name" scope="col" data-key="name" rowspan="2">Name <span class="dir"></span></th>');
       weekends.forEach(w => {
-        row1.push(`<th class="th-group" scope="colgroup" colspan="5" title="${w.label}">${escapeHtml(w.label)}</th>`);
+        row1.push(`<th class="th-group weekend-header" scope="colgroup" colspan="5" title="${w.label}">${escapeHtml(w.label)}</th>`);
       });
       row1.push('<th class="right" scope="col" rowspan="2" title="Cumulative total hours across all months">Total Hours (All Time)</th>');
       row1.push('<th class="right th-actions" scope="col" rowspan="2">Actions</th>');
@@ -6155,6 +6204,31 @@
       console.log('🔄 Weekend Summary re-rendering...');
       renderWeekendSummary();
       console.log('✅ Weekend summary rendered');
+    };
+
+    // Force migration function (accessible from browser console)
+    window.forceMigration = function() {
+      console.log('🔄 Forcing migration...');
+      // Clear migration flag first
+      localStorage.removeItem('hours-migration-completed-v1');
+      console.log('  Cleared migration flag');
+
+      // Run migration
+      const result = migrateOldHoursToShifts();
+      console.log('  Migration result:', result);
+
+      // Force refresh to see changes
+      window.location.reload();
+    };
+
+    // Debug function to check migration status and data
+    window.debugMigrationStatus = function() {
+      const migrationCompleted = localStorage.getItem('hours-migration-completed-v1') === 'true';
+      console.log('Migration completed:', migrationCompleted);
+      console.log('Pass list hours:', JSON.parse(localStorage.getItem('pass-list-hours-v1') || '{}'));
+      console.log('Shift hours:', JSON.parse(localStorage.getItem('shift-hours-v1') || '{}'));
+      console.log('Shift assignments:', JSON.parse(localStorage.getItem('ot_weekend_shifts_v1') || '{}'));
+      console.log('Refusals:', JSON.parse(localStorage.getItem('ot_refusals_v1') || '{}'));
     };
 
     // === MOBILE BOTTOM SHEET FUNCTIONALITY ===
